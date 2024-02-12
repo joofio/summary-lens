@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify
 from lens_app import app
 import requests
-from lens_app.core import SERVER_URL, process_bundle, process_ips, summarize
+from lens_app.core import SERVER_URL, process_bundle, process_ips, summarize, summarize2
 
 print(app.config)
 
@@ -26,13 +26,13 @@ def lens_app(bundle):
     if preprocessor not in ["preprocessing-service-manual"]:
         return "Error: preprocessor not supported", 404
 
-    if lenses not in ["lens-summary"]:
+    if lenses not in ["lens-summary", "lens-summary-2"]:
         return "Error: lens not supported", 404
 
     # preprocessed_bundle, ips = separate_data(bundleid, patientIdentifier)
     bundle = requests.get(SERVER_URL + "epi/api/fhir/Bundle/" + bundle)
 
-    language, epi = process_bundle(bundle.json())
+    language, epi, drug_name = process_bundle(bundle.json())
     # GET https://fosps.gravitatehealth.eu/ips/api/fhir/Patient/$summary?identifier=alicia-1
     ips = requests.get(
         SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
@@ -40,8 +40,13 @@ def lens_app(bundle):
     # print(ips)
     gender, age, diagnostics, medications = process_ips(ips.json())
 
-    print(language, epi, gender, age, diagnostics, medications)
-    response = summarize(language, epi, gender, age, diagnostics, medications)
+    # print(language, epi, gender, age, diagnostics, medications)
+    if lenses == "lens-summary":
+        response = summarize(language, epi, gender, age, diagnostics, medications)
+    if lenses == "lens-summary-2":
+        response = summarize2(
+            language, drug_name, gender, age, diagnostics, medications
+        )
     # Return the JSON response
     print(response)
     return jsonify(response.choices[0].message.content)

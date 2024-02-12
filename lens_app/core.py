@@ -62,6 +62,13 @@ LANGUAGE_MAP = {
 
 def process_bundle(bundle):
     # print(bundle)
+    mp = evaluate(
+        bundle,
+        "Bundle.entry.where(resource.resourceType=='MedicinalProductDefinition')",
+        [],
+    )[0]["resource"]
+    #  print(mp)
+    drug_name = mp["name"][0]["productName"]
     language = bundle["language"]
     # print(language)
     comp = bundle["entry"][0]["resource"]
@@ -73,7 +80,7 @@ def process_bundle(bundle):
                 epi_full_text.append({subsec["title"]: subsec["text"]["div"]})
     # print(sec["text"])
 
-    return language, epi_full_text
+    return language, epi_full_text, drug_name
 
 
 def process_ips(ips):
@@ -100,7 +107,7 @@ def process_ips(ips):
         ips, "Bundle.entry.where(resource.resourceType=='Condition')", []
     )
     diagnostics = []
-    print(conditions)
+    # print(conditions)
     for cond in conditions:
         diagnostics.append(cond["resource"]["code"]["text"])
 
@@ -130,6 +137,41 @@ def summarize(language, epi, gender, age, diagnostics, medications):
         + " and medications "
         + " and ".join(medications)
         + ". Please take into account possible interactions and advice for the patient charachteristcs and try to link to information in the leaflet. Please respond in "
+        + lang
+    )
+    print("the prompt will be:" + prompt)
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "system",
+                "content": "You are helping a patient better understand a electronic patient information leaflet. Your response should be to try to summarize the leaflet in two paragraphs. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of a very large and complicated document. You want to focus on summarizing the document, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics",
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        model="gpt-4",
+    )
+    return chat_completion
+
+
+def summarize2(language, drug_name, gender, age, diagnostics, medications):
+    # print(epi_text)
+    lang = LANGUAGE_MAP[language]
+    prompt = (
+        "Please provide me input of the most important aspects of taking the medicine named"
+        + drug_name
+        + ". Please explain it in a way a person with "
+        + str(age)
+        + " years old can understand. Also take into account the patient is a "
+        + gender
+        + " with the following diagnostics "
+        + "and".join(diagnostics)
+        + " and medications "
+        + " and ".join(medications)
+        + ". Please explain the pros and cons of the medication. Especially for the other medication i am taking and conditions. Please respond in "
         + lang
     )
     print("the prompt will be:" + prompt)
