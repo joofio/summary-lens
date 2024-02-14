@@ -123,6 +123,8 @@ def process_ips(ips):
 
 def summarize(language, epi, gender, age, diagnostics, medications):
     epi_text = [k + v for k, v in epi[0].items()]
+    model = "gpt-4"
+
     # print(epi_text)
     lang = LANGUAGE_MAP[language]
     prompt = (
@@ -152,13 +154,19 @@ def summarize(language, epi, gender, age, diagnostics, medications):
                 "content": prompt,
             },
         ],
-        model="gpt-4",
+        model=model,
     )
-    return chat_completion
+    return {
+        "response": chat_completion.choices[0].message.content,
+        "prompt": prompt,
+        "datetime": datetime.now().isoformat(),
+        "model": model,
+    }
 
 
 def summarize2(language, drug_name, gender, age, diagnostics, medications):
     # print(epi_text)
+    model = "gpt-4"
     lang = LANGUAGE_MAP[language]
     prompt = (
         "Please provide me input of the most important aspects of taking the medicine named"
@@ -187,6 +195,11 @@ def summarize2(language, drug_name, gender, age, diagnostics, medications):
                 "content": prompt,
             },
         ],
-        model="gpt-3.5-turbo",
+        model=model,
     )
-    return chat_completion
+    return {
+        "response": chat_completion.choices[0].message.content,
+        "prompt": prompt,
+        "datetime": datetime.now().isoformat(),
+        "model": model,
+    }

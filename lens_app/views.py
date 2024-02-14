@@ -49,4 +49,4 @@ def lens_app(bundle):
         )
     # Return the JSON response
     print(response)
-    return jsonify(response.choices[0].message.content)
+    return jsonify(response)
