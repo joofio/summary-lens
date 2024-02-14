@@ -4,4 +4,4 @@ GET http://localhost:5005/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc8
 
 ### Test the FHIR server - summary 2
 
-GET http://localhost:5005/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary-2
+GET http://localhost:5005/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary-2&model=llama2

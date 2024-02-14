@@ -20,6 +20,7 @@ def lens_app(bundle):
     preprocessor = request.args.get("preprocessors", "")
     lenses = request.args.get("lenses", "")
     patientIdentifier = request.args.get("patientIdentifier", "")
+    model = request.args.get("model", "")
     print(preprocessor, lenses, patientIdentifier)
     if preprocessor == "" or lenses == "" or patientIdentifier == "":
         return "Error: missing parameters", 404
@@ -45,7 +46,7 @@ def lens_app(bundle):
         response = summarize(language, epi, gender, age, diagnostics, medications)
     if lenses == "lens-summary-2":
         response = summarize2(
-            language, drug_name, gender, age, diagnostics, medications
+            language, drug_name, gender, age, diagnostics, medications, model
         )
     # Return the JSON response
     print(response)

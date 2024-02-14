@@ -3,7 +3,8 @@ from fhirpathpy import evaluate
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
-
+import requests
+import json
 
 load_dotenv()
 
@@ -58,6 +59,22 @@ LANGUAGE_MAP = {
     "ca": "Catalan",
     "gl": "Galician",
 }
+
+
+def parse_response(response, type="response"):
+    print(response)
+    parsed_response = ""
+    for line in response.split("\n"):
+        print(line)
+        try:
+            d = json.loads(line)
+            if type == "response":
+                parsed_response += d["response"]
+            if type == "chat":
+                parsed_response += d["message"]["content"]
+        except:
+            pass
+    return parsed_response
 
 
 def process_bundle(bundle):
@@ -164,9 +181,11 @@ def summarize(language, epi, gender, age, diagnostics, medications):
     }
 
 
-def summarize2(language, drug_name, gender, age, diagnostics, medications):
+def summarize2(
+    language, drug_name, gender, age, diagnostics, medications, model="gpt-4"
+):
     # print(epi_text)
-    model = "gpt-4"
+    # model = "gpt-4"
     lang = LANGUAGE_MAP[language]
     prompt = (
         "Please provide me input of the most important aspects of taking the medicine named"
@@ -176,29 +195,62 @@ def summarize2(language, drug_name, gender, age, diagnostics, medications):
         + " years old can understand. Also take into account the patient is a "
         + gender
         + " with the following diagnostics "
-        + "and".join(diagnostics)
+        + " and ".join(diagnostics)
         + " and medications "
         + " and ".join(medications)
         + ". Please explain the pros and cons of the medication. Especially for the other medication i am taking and conditions. Please respond in "
         + lang
     )
     print("the prompt will be:" + prompt)
+    if "gpt" in model:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are helping a patient better understand a electronic patient information leaflet. Your response should be to try to summarize the leaflet in two paragraphs. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of a very large and complicated document. You want to focus on summarizing the document, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics",
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            model=model,
+        )
+        response = (chat_completion.choices[0].message.content,)
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "system",
-                "content": "You are helping a patient better understand a electronic patient information leaflet. Your response should be to try to summarize the leaflet in two paragraphs. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of a very large and complicated document. You want to focus on summarizing the document, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics",
+    if "llama" in model:
+        result = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "llama2",
+                "prompt": prompt,
             },
-            {
-                "role": "user",
-                "content": prompt,
+        )
+        #  print(response)
+
+        response = parse_response(result.text)
+        result = requests.post(
+            "http://localhost:11434/api/chat",
+            json={
+                "model": "llama2",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are helping a patient understand his medication and therapeutic. Your response should be to try to highlight most important issues about a medication. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of the most important issues. You want to focus on providing understandble information, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics. You will responde in "
+                        + lang,
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
             },
-        ],
-        model=model,
-    )
+        )
+
+        response = parse_response(result.text, type="chat")
+
     return {
-        "response": chat_completion.choices[0].message.content,
+        "response": response,
         "prompt": prompt,
         "datetime": datetime.now().isoformat(),
         "model": model,
