@@ -219,16 +219,16 @@ def summarize2(
         response = (chat_completion.choices[0].message.content,)
 
     if "llama" in model:
-        result = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": "llama2",
-                "prompt": prompt,
-            },
-        )
+        # result = requests.post(
+        #     "http://localhost:11434/api/generate",
+        #     json={
+        #         "model": "llama2",
+        #         "prompt": prompt,
+        #     },
+        # )
         #  print(response)
 
-        response = parse_response(result.text)
+        # response = parse_response(result.text)
         result = requests.post(
             "http://localhost:11434/api/chat",
             json={
@@ -247,6 +247,25 @@ def summarize2(
             },
         )
 
+        response = parse_response(result.text, type="chat")
+    if "mistral" in model:
+        result = requests.post(
+            "http://localhost:11434/api/chat",
+            json={
+                "model": "mistral",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are helping a patient understand his medication and therapeutic. Your response should be to try to highlight most important issues about a medication. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of the most important issues. You want to focus on providing understandble information, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics. You will responde in "
+                        + lang,
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+            },
+        )
         response = parse_response(result.text, type="chat")
 
     return {
