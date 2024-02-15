@@ -8,10 +8,8 @@ import json
 
 load_dotenv()
 
-SERVER_URL = "https://fosps.gravitatehealth.eu/"  # prod
-SERVER_URL = "https://gravitate-health.lst.tfo.upm.es/"  # dev
-
-
+SERVER_URL = os.getenv("SERVER_URL")
+MODEL_URL = os.getenv("MODEL_URL")
 client = OpenAI(
     # This is the default and can be omitted
     api_key=os.getenv("MY_API_KEY"),
@@ -230,7 +228,7 @@ def summarize2(
 
         # response = parse_response(result.text)
         result = requests.post(
-            "http://localhost:11434/api/chat",
+            MODEL_URL + "/api/chat",
             json={
                 "model": "llama2",
                 "messages": [
@@ -250,7 +248,7 @@ def summarize2(
         response = parse_response(result.text, type="chat")
     if "mistral" in model:
         result = requests.post(
-            "http://localhost:11434/api/chat",
+            MODEL_URL + "/api/chat",
             json={
                 "model": "mistral",
                 "messages": [
