@@ -12,7 +12,7 @@ SERVER_URL = os.getenv("SERVER_URL")
 MODEL_URL = os.getenv("MODEL_URL")
 client = OpenAI(
     # This is the default and can be omitted
-    api_key=os.getenv("MY_API_KEY"),
+    api_key=os.getenv("OPENAI_KEY"),
 )
 
 
