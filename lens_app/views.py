@@ -113,7 +113,7 @@ def lens_app(bundle):
         ],
     }
     comp = Composition.parse_obj(json_obj)
-    comp.date = response["datetime"]
+    comp.date = str(response["datetime"])
     comp.author[0].display = response["model"]
     note = Annotation.construct()
     note.text = response["prompt"]
