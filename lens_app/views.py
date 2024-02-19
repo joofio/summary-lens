@@ -2,6 +2,8 @@ from flask import render_template, request, jsonify
 from lens_app import app
 import requests
 from lens_app.core import SERVER_URL, process_bundle, process_ips, summarize, summarize2
+from fhir.resources.composition import Composition
+from fhir.resources.annotation import Annotation
 
 print(app.config)
 
@@ -29,12 +31,14 @@ def lens_app(bundle):
 
     if lenses not in ["lens-summary", "lens-summary-2"]:
         return "Error: lens not supported", 404
+    print(SERVER_URL)
 
     # preprocessed_bundle, ips = separate_data(bundleid, patientIdentifier)
     bundle = requests.get(SERVER_URL + "epi/api/fhir/Bundle/" + bundle)
 
     language, epi, drug_name = process_bundle(bundle.json())
     # GET https://fosps.gravitatehealth.eu/ips/api/fhir/Patient/$summary?identifier=alicia-1
+    print(SERVER_URL)
     ips = requests.get(
         SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
     )
@@ -50,4 +54,75 @@ def lens_app(bundle):
         )
     # Return the JSON response
     print(response)
-    return jsonify(response)
+    json_obj = {
+        "resourceType": "Composition",
+        "id": "example",
+        "identifier": [
+            {"system": "http://healthintersections.com.au/test", "value": "1"}
+        ],
+        "status": "final",
+        "type": {
+            "coding": [
+                {
+                    "system": "http://loinc.org",
+                    "code": "11488-4",
+                    "display": "Consult note",
+                }
+            ]
+        },
+        "category": [
+            {
+                "coding": [
+                    {
+                        "system": "http://loinc.org",
+                        "code": "LP183761-8",
+                        "display": "Report",
+                    }
+                ]
+            }
+        ],
+        "author": [{"display": "GH Lens"}],
+        "date": "2012-01-04T09:10:14Z",
+        "title": "Consultation Note",
+        "section": [
+            {
+                "title": "History of family member diseases",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "10157-6",
+                            "display": "History of family member diseases Narrative",
+                        }
+                    ]
+                },
+                "text": {
+                    "status": "generated",
+                    "div": '<div xmlns="http://www.w3.org/1999/xhtml">\n\t\t\t\t<p>History of family member diseases - not available</p>\n\t\t\t</div>',
+                },
+                "emptyReason": {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/list-empty-reason",
+                            "code": "withheld",
+                            "display": "Information Withheld",
+                        }
+                    ]
+                },
+            },
+        ],
+    }
+    comp = Composition.parse_obj(json_obj)
+    comp.date = response["datetime"]
+    comp.author[0].display = response["model"]
+    note = Annotation.construct()
+    note.text = response["prompt"]
+    # comp.note[0].text = response["prompt"]
+    comp.note = list()
+    comp.note.append(note)
+    comp.section[0].text.div = (
+        '<div xmlns="http://www.w3.org/1999/xhtml">'
+        + response["response"][0]
+        + "</div>"
+    )
+    return jsonify(comp.dict())
