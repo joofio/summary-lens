@@ -10,7 +10,11 @@ print(app.config)
 
 @app.route("/", methods=["GET"])
 def hello():
-    return render_template("index.html", result="")
+    json_obj = {
+        "message": "Hello and welcome to the Summary Lens API",
+        "status": "OK",
+    }
+    return jsonify(json_obj)
 
 
 ##POST https://fosps.gravitatehealth.eu/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-selector-mvp2_pregnancy

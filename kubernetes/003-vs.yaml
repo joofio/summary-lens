@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: external-summary-lens-python
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - gh-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /ai/
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: external-summary-lens-python.default.svc.cluster.local
+        port:
+          number: 80
+    corsPolicy:
+      allowMethods:
+      - GET
+      - POST
+      - OPTIONS
+      allowOrigins:
+      - exact: "*"
+      allowHeaders:
+      - "content-type"
+      - "Accept"
