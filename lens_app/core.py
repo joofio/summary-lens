@@ -180,7 +180,7 @@ def summarize(language, epi, gender, age, diagnostics, medications):
 
 
 def summarize2(
-    language, drug_name, gender, age, diagnostics, medications, model="llama2"
+    language, drug_name, gender, age, diagnostics, medications, model="llama"
 ):
     # print(epi_text)
     # model = "gpt-4"
