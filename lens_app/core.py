@@ -10,10 +10,12 @@ load_dotenv()
 
 SERVER_URL = os.getenv("SERVER_URL")
 MODEL_URL = os.getenv("MODEL_URL")
-client = OpenAI(
-    # This is the default and can be omitted
-    api_key=os.getenv("OPENAI_KEY"),
-)
+
+if MODEL_URL is None:
+    client = OpenAI(
+        # This is the default and can be omitted
+        api_key=os.getenv("OPENAI_KEY"),
+    )
 
 
 LANGUAGE_MAP = {
@@ -242,6 +244,7 @@ def summarize2(
                         "content": prompt,
                     },
                 ],
+                "stream": "false"
             },
         )
 
@@ -262,6 +265,7 @@ def summarize2(
                         "content": prompt,
                     },
                 ],
+                "stream": "false"
             },
         )
         response = parse_response(result.text, type="chat")
