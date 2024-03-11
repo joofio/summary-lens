@@ -126,7 +126,7 @@ def lens_app(bundle):
     comp.note.append(note)
     comp.section[0].text.div = (
         '<div xmlns="http://www.w3.org/1999/xhtml">'
-        + response["response"][0]
+        + response["response"]
         + "</div>"
     )
     return jsonify(comp.dict())

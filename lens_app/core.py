@@ -5,11 +5,14 @@ import os
 from openai import OpenAI
 import requests
 import json
+from ollama import Client
 
 load_dotenv()
 
 SERVER_URL = os.getenv("SERVER_URL")
 MODEL_URL = os.getenv("MODEL_URL")
+
+client = Client(host=MODEL_URL)
 
 if MODEL_URL is None:
     client = OpenAI(
@@ -201,7 +204,6 @@ def summarize2(
         + ". Please explain the pros and cons of the medication. Especially for the other medication i am taking and conditions. Please respond in "
         + lang
     )
-    print("the prompt will be:" + prompt)
     if "gpt" in model:
         chat_completion = client.chat.completions.create(
             messages=[
@@ -228,27 +230,20 @@ def summarize2(
         # )
         #  print(response)
 
-        # response = parse_response(result.text)
-        result = requests.post(
-            MODEL_URL + "/api/chat",
-            json={
-                "model": "llama2",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are helping a patient understand his medication and therapeutic. Your response should be to try to highlight most important issues about a medication. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of the most important issues. You want to focus on providing understandble information, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics. You will responde in "
-                        + lang,
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-                "stream": "false"
+        result = client.chat(model="llama2", messages=[
+            {
+                "role": "system",
+                "content": "You are helping a patient understand his medication and therapeutic. Your response should be to try to highlight most important issues about a medication. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of the most important issues. You want to focus on providing understandble information, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics. You will responde in "
+                + lang,
             },
-        )
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ], stream=False)
 
-        response = parse_response(result.text, type="chat")
+        response = result["message"]["content"]
+
     if "mistral" in model:
         result = requests.post(
             MODEL_URL + "/api/chat",

@@ -6,3 +6,4 @@ gunicorn
 flask
 requests
 fhir.resources
+ollama
