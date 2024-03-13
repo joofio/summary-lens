@@ -191,7 +191,7 @@ def summarize2(
     # model = "gpt-4"
     lang = LANGUAGE_MAP[language]
     prompt = (
-        "Please provide me input of the most important aspects of taking the medicine named"
+        "Please provide me input of the most important aspects of taking the medicine named "
         + drug_name
         + ". Please explain it in a way a person with "
         + str(age)
@@ -201,7 +201,7 @@ def summarize2(
         + " and ".join(diagnostics)
         + " and medications "
         + " and ".join(medications)
-        + ". Please explain the pros and cons of the medication. Especially for the other medication i am taking and conditions. Please respond in "
+        + ". Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. Please answer in "
         + lang
     )
     if "gpt" in model:
@@ -220,7 +220,7 @@ def summarize2(
         )
         response = (chat_completion.choices[0].message.content,)
 
-    if "llama" in model:
+    if "graviting-llama" in model:
         # result = requests.post(
         #     "http://localhost:11434/api/generate",
         #     json={
@@ -230,19 +230,11 @@ def summarize2(
         # )
         #  print(response)
 
-        result = client.chat(model="llama2", messages=[
-            {
-                "role": "system",
-                "content": "You are helping a patient understand his medication and therapeutic. Your response should be to try to highlight most important issues about a medication. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of the most important issues. You want to focus on providing understandble information, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics. You will responde in "
-                + lang,
-            },
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ], stream=False)
+        prompt_message = prompt
 
-        response = result["message"]["content"]
+        result = client.generate(model="graviting-llama", prompt=prompt_message, stream=False)
+
+        response = result["response"]
 
     if "mistral" in model:
         result = requests.post(
