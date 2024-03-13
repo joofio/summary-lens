@@ -191,17 +191,17 @@ def summarize2(
     # model = "gpt-4"
     lang = LANGUAGE_MAP[language]
     prompt = (
-        "Please provide me input of the most important aspects of taking the medicine named "
+        "The drug name is "
         + drug_name
         + ". Please explain it in a way a person with "
         + str(age)
         + " years old can understand. Also take into account the patient is a "
         + gender
         + " with the following diagnostics "
-        + " and ".join(diagnostics)
+        + "".join(diagnostics)
         + " and medications "
-        + " and ".join(medications)
-        + ". Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. Please answer in "
+        + "".join(medications)
+        + ". Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in "
         + lang
     )
     if "gpt" in model:
