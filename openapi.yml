@@ -1,0 +1,61 @@
+openapi: '3.0.2'
+info:
+  title: Gravitate Health FOSPS - AI Service
+  version: '1.0'
+servers:
+- url: https://gravitate-health.lst.tfo.upm.es
+  description: "Development Server"
+paths:
+  /ai/summary:
+    get:
+      tags:
+      - Lenses
+      description: 'Request for a summary of an ePI using LLM AI'
+      parameters:
+      - $ref: '#/components/parameters/epi'
+      - $ref: '#/components/parameters/preprocessors'
+      - $ref: '#/components/parameters/patientIdentifier'
+      - $ref: '#/components/parameters/lenses'
+      - $ref: '#/components/parameters/model'
+      responses:
+        '200':
+          description: OK
+        '500':
+          description: Internal Server Error
+components:
+  parameters:
+    epi:
+      name: epi
+      in: path
+      description: 'ePI to summarize'
+      required: true
+      schema:
+        type: string
+    preprocessors:
+      name: preprocessors
+      in: query
+      description: 'Preprocessors to apply to the ePI'
+      required: true
+      schema:
+        type: string
+    patientIdentifier:
+      name: patientIdentifier
+      in: query
+      description: 'Patient identifier'
+      required: true
+      schema:
+        type: string
+    lenses:
+      name: lenses
+      in: query
+      description: 'Lenses to apply to the ePI (only lens-summary and lens-summary-2 are available)'
+      required: true
+      schema:
+        type: string
+    model:
+      name: model
+      in: query
+      description: 'Model to use for the summary'
+      required: true
+      schema:
+        type: string
