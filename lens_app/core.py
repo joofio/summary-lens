@@ -65,7 +65,6 @@ LANGUAGE_MAP = {
 
 
 def parse_response(response, type="response"):
-    print(response)
     parsed_response = ""
     for line in response.split("\n"):
         print(line)
@@ -203,6 +202,8 @@ def summarize2(
         + "".join(medications)
         + ". Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in "
         + lang
+        + " and this is totally mandatory. Otherwise I will not understand."
+        + "\n\nAnswer:\n\n"
     )
     if "gpt" in model:
         chat_completion = client.chat.completions.create(
@@ -230,11 +231,34 @@ def summarize2(
         # )
         #  print(response)
 
+        systemMessage = """
+        You must follow this indications extremety strictly:\n
+        1. You must answer in """ + lang + """ \n
+        2. You must provide a summary of the medication and its pros and cons. \n
+        3. You must take into account the patient information. \n
+        4. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
+        5. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        """
+
+        print("prompt is:" + prompt)
+
         prompt_message = prompt
 
-        result = client.generate(model="graviting-llama", prompt=prompt_message, stream=False)
+        result = client.chat(model="graviting-llama",
+                             messages=[
+                                    {
+                                        "content": systemMessage,
+                                        "role": "system" 
+                                    },
+                                    { 
+                                        "content": prompt_message,
+                                        "role": "assistant"
+                                    }
+                                ],
+                             stream=False,
+                             keep_alive="0m")
 
-        response = result["response"]
+        response = result["message"]["content"]
 
     if "mistral" in model:
         result = requests.post(
