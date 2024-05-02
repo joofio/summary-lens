@@ -5,15 +5,20 @@ import os
 from openai import OpenAI
 import requests
 import json
+from ollama import Client
 
 load_dotenv()
 
 SERVER_URL = os.getenv("SERVER_URL")
 MODEL_URL = os.getenv("MODEL_URL")
-client = OpenAI(
-    # This is the default and can be omitted
-    api_key=os.getenv("OPENAI_KEY"),
-)
+
+client = Client(host=MODEL_URL)
+
+if MODEL_URL is None:
+    client = OpenAI(
+        # This is the default and can be omitted
+        api_key=os.getenv("OPENAI_KEY"),
+    )
 
 
 LANGUAGE_MAP = {
@@ -60,7 +65,6 @@ LANGUAGE_MAP = {
 
 
 def parse_response(response, type="response"):
-    print(response)
     parsed_response = ""
     for line in response.split("\n"):
         print(line)
@@ -180,26 +184,27 @@ def summarize(language, epi, gender, age, diagnostics, medications):
 
 
 def summarize2(
-    language, drug_name, gender, age, diagnostics, medications, model="gpt-4"
+    language, drug_name, gender, age, diagnostics, medications, model="llama"
 ):
     # print(epi_text)
     # model = "gpt-4"
     lang = LANGUAGE_MAP[language]
     prompt = (
-        "Please provide me input of the most important aspects of taking the medicine named"
+        "The drug name is "
         + drug_name
         + ". Please explain it in a way a person with "
         + str(age)
         + " years old can understand. Also take into account the patient is a "
         + gender
         + " with the following diagnostics "
-        + " and ".join(diagnostics)
+        + "".join(diagnostics)
         + " and medications "
-        + " and ".join(medications)
-        + ". Please explain the pros and cons of the medication. Especially for the other medication i am taking and conditions. Please respond in "
+        + "".join(medications)
+        + ". Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in "
         + lang
+        + " and this is totally mandatory. Otherwise I will not understand."
+        + "\n\nAnswer:\n\n"
     )
-    print("the prompt will be:" + prompt)
     if "gpt" in model:
         chat_completion = client.chat.completions.create(
             messages=[
@@ -216,7 +221,7 @@ def summarize2(
         )
         response = (chat_completion.choices[0].message.content,)
 
-    if "llama" in model:
+    if "graviting-llama" in model:
         # result = requests.post(
         #     "http://localhost:11434/api/generate",
         #     json={
@@ -226,26 +231,35 @@ def summarize2(
         # )
         #  print(response)
 
-        # response = parse_response(result.text)
-        result = requests.post(
-            MODEL_URL + "/api/chat",
-            json={
-                "model": "llama2",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are helping a patient understand his medication and therapeutic. Your response should be to try to highlight most important issues about a medication. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of the most important issues. You want to focus on providing understandble information, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics. You will responde in "
-                        + lang,
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-            },
-        )
+        systemMessage = """
+        You must follow this indications extremety strictly:\n
+        1. You must answer in """ + lang + """ \n
+        2. You must provide a summary of the medication and its pros and cons. \n
+        3. You must take into account the patient information. \n
+        4. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
+        5. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        """
 
-        response = parse_response(result.text, type="chat")
+        print("prompt is:" + prompt)
+
+        prompt_message = prompt
+
+        result = client.chat(model="graviting-llama",
+                             messages=[
+                                    {
+                                        "content": systemMessage,
+                                        "role": "system" 
+                                    },
+                                    { 
+                                        "content": prompt_message,
+                                        "role": "assistant"
+                                    }
+                                ],
+                             stream=False,
+                             keep_alive="0m")
+
+        response = result["message"]["content"]
+
     if "mistral" in model:
         result = requests.post(
             MODEL_URL + "/api/chat",
@@ -262,6 +276,7 @@ def summarize2(
                         "content": prompt,
                     },
                 ],
+                "stream": "false"
             },
         )
         response = parse_response(result.text, type="chat")

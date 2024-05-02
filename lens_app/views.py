@@ -10,13 +10,17 @@ print(app.config)
 
 @app.route("/", methods=["GET"])
 def hello():
-    return render_template("index.html", result="")
+    json_obj = {
+        "message": "Hello and welcome to the Summary Lens API",
+        "status": "OK",
+    }
+    return jsonify(json_obj)
 
 
 ##POST https://fosps.gravitatehealth.eu/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-selector-mvp2_pregnancy
 
 
-@app.route("/focusing/focus/<bundle>", methods=["GET"])
+@app.route("/summary/<bundle>", methods=["GET"])
 def lens_app(bundle):
     # Get the query parameters from the request
     preprocessor = request.args.get("preprocessors", "")
@@ -122,7 +126,7 @@ def lens_app(bundle):
     comp.note.append(note)
     comp.section[0].text.div = (
         '<div xmlns="http://www.w3.org/1999/xhtml">'
-        + response["response"][0]
+        + response["response"]
         + "</div>"
     )
     return jsonify(comp.dict())

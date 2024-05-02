@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-summary-lens-python
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: external-summary-lens-python
+  template:
+    metadata:
+      labels:
+        app: external-summary-lens-python
+    spec:
+      containers:
+      - name: external-summary-lens-python
+        image: gravitate-registry.cr.de-fra.ionos.com/external-summary-lens-python:devserver
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_URL
+          value: "https://gravitate-health.lst.tfo.upm.es/"
+        - name: MODEL_URL
+          value: "http://tinman.lst:11434"
+        - name: OPENAI_KEY
+          value: ""
+        ports:
+        - containerPort: 80
+          protocol: TCP
+      restartPolicy: Always
+status: {}
