@@ -22,6 +22,10 @@ def hello():
 
 @app.route("/summary/<bundle>", methods=["GET"])
 def lens_app(bundle):
+    TITLE_DOC = {
+        "en": "Electronic Product Information Summary",
+        "es": "Resumo del Prospecto",
+    }
     # Get the query parameters from the request
     preprocessor = request.args.get("preprocessors", "")
     lenses = request.args.get("lenses", "")
@@ -42,6 +46,8 @@ def lens_app(bundle):
 
     language, epi, drug_name = process_bundle(bundle.json())
     # GET https://fosps.gravitatehealth.eu/ips/api/fhir/Patient/$summary?identifier=alicia-1
+
+    title = TITLE_DOC[language]
     print(SERVER_URL)
     ips = requests.get(
         SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
@@ -61,9 +67,6 @@ def lens_app(bundle):
     json_obj = {
         "resourceType": "Composition",
         "id": "example",
-        "identifier": [
-            {"system": "http://healthintersections.com.au/test", "value": "1"}
-        ],
         "status": "final",
         "type": {
             "coding": [
@@ -87,10 +90,10 @@ def lens_app(bundle):
         ],
         "author": [{"display": "GH Lens"}],
         "date": "2012-01-04T09:10:14Z",
-        "title": "Consultation Note",
+        # "title": "Consultation Note",
         "section": [
             {
-                "title": "History of family member diseases",
+                "title": title,
                 "code": {
                     "coding": [
                         {
@@ -104,15 +107,6 @@ def lens_app(bundle):
                     "status": "generated",
                     "div": '<div xmlns="http://www.w3.org/1999/xhtml">\n\t\t\t\t<p>History of family member diseases - not available</p>\n\t\t\t</div>',
                 },
-                "emptyReason": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/list-empty-reason",
-                            "code": "withheld",
-                            "display": "Information Withheld",
-                        }
-                    ]
-                },
             },
         ],
     }
@@ -125,8 +119,6 @@ def lens_app(bundle):
     comp.note = list()
     comp.note.append(note)
     comp.section[0].text.div = (
-        '<div xmlns="http://www.w3.org/1999/xhtml">'
-        + response["response"]
-        + "</div>"
+        '<div xmlns="http://www.w3.org/1999/xhtml">' + response["response"] + "</div>"
     )
     return jsonify(comp.dict())
