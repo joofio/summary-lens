@@ -63,7 +63,7 @@ def lens_app(bundle):
             language, drug_name, gender, age, diagnostics, medications, model
         )
     # Return the JSON response
-    print(response)
+    # print(response)
     json_obj = {
         "resourceType": "Composition",
         "id": "example",
@@ -90,7 +90,7 @@ def lens_app(bundle):
         ],
         "author": [{"display": "GH Lens"}],
         "date": "2012-01-04T09:10:14Z",
-        # "title": "Consultation Note",
+        "title": title,
         "section": [
             {
                 "title": title,
