@@ -67,7 +67,7 @@ LANGUAGE_MAP = {
 def parse_response(response, type="response"):
     parsed_response = ""
     for line in response.split("\n"):
-        print(line)
+        # print(line)
         try:
             d = json.loads(line)
             if type == "response":
@@ -95,7 +95,7 @@ def process_bundle(bundle):
     for sec in comp["section"]:
         if sec.get("section"):
             for subsec in sec["section"]:
-                print(subsec["text"]["div"])
+                #  print(subsec["text"]["div"])
                 epi_full_text.append({subsec["title"]: subsec["text"]["div"]})
     # print(sec["text"])
 
@@ -103,6 +103,7 @@ def process_bundle(bundle):
 
 
 def process_ips(ips):
+    print(ips)
     pat = evaluate(ips, "Bundle.entry.where(resource.resourceType=='Patient')", [])[0][
         "resource"
     ]
@@ -231,32 +232,32 @@ def summarize2(
         # )
         #  print(response)
 
-        systemMessage = """
+        systemMessage = (
+            """
         You must follow this indications extremety strictly:\n
-        1. You must answer in """ + lang + """ \n
+        1. You must answer in """
+            + lang
+            + """ \n
         2. You must provide a summary of the medication and its pros and cons. \n
         3. You must take into account the patient information. \n
         4. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
         5. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
         """
+        )
 
         print("prompt is:" + prompt)
 
         prompt_message = prompt
 
-        result = client.chat(model="graviting-llama",
-                             messages=[
-                                    {
-                                        "content": systemMessage,
-                                        "role": "system" 
-                                    },
-                                    { 
-                                        "content": prompt_message,
-                                        "role": "assistant"
-                                    }
-                                ],
-                             stream=False,
-                             keep_alive="0m")
+        result = client.chat(
+            model="graviting-llama",
+            messages=[
+                {"content": systemMessage, "role": "system"},
+                {"content": prompt_message, "role": "assistant"},
+            ],
+            stream=False,
+            keep_alive="0m",
+        )
 
         response = result["message"]["content"]
 
@@ -276,7 +277,7 @@ def summarize2(
                         "content": prompt,
                     },
                 ],
-                "stream": "false"
+                "stream": "false",
             },
         )
         response = parse_response(result.text, type="chat")
