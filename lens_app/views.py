@@ -20,40 +20,61 @@ def hello():
 ##POST https://fosps.gravitatehealth.eu/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-selector-mvp2_pregnancy
 
 
-@app.route("/summary/<bundle>", methods=["GET"])
-def lens_app(bundle):
+@app.route("/summary", methods=["GET", "POST"])
+@app.route("/summary/<bundleid>", methods=["GET", "POST"])
+def lens_app(bundleid=None):
     TITLE_DOC = {
         "en": "Electronic Product Information Summary",
         "es": "Resumo del Prospecto",
     }
+    epibundle = None
+    ips = None
     # Get the query parameters from the request
     preprocessor = request.args.get("preprocessors", "")
     lenses = request.args.get("lenses", "")
     patientIdentifier = request.args.get("patientIdentifier", "")
     model = request.args.get("model", "")
     print(preprocessor, lenses, patientIdentifier)
-    if preprocessor == "" or lenses == "" or patientIdentifier == "":
-        return "Error: missing parameters", 404
+    if lenses not in ["lens-summary", "lens-summary-2"]:
+        return "Error: lens not supported", 404
     if preprocessor not in ["preprocessing-service-manual"]:
         return "Error: preprocessor not supported", 404
 
-    if lenses not in ["lens-summary", "lens-summary-2"]:
-        return "Error: lens not supported", 404
+    if request.method == "GET":
+        if preprocessor == "" or lenses == "" or patientIdentifier == "":
+            return "Error: missing parameters", 404
+
     print(SERVER_URL)
+    if request.method == "POST":
+        data = request.json
+        epibundle = data.get("epi")
+        ips = data.get("ips")
+        print(epibundle)
+        if ips is None and patientIdentifier == "":
+            return "Error: missing IPS", 404
+        # preprocessed_bundle, ips = separate_data(bundleid, patientIdentifier)
+        if epibundle is None and bundleid is None:
+            return "Error: missing EPI", 404
 
-    # preprocessed_bundle, ips = separate_data(bundleid, patientIdentifier)
-    bundle = requests.get(SERVER_URL + "epi/api/fhir/Bundle/" + bundle)
-
-    language, epi, drug_name = process_bundle(bundle.json())
+    if epibundle is None:
+        print("epibundle is none")
+        # print(epibundle)
+        # print(bundleid)
+        print(SERVER_URL + "epi/api/fhir/Bundle/" + bundleid)
+        epibundle = requests.get(SERVER_URL + "epi/api/fhir/Bundle/" + bundleid).json()
+    print(epibundle)
+    language, epi, drug_name = process_bundle(epibundle)
     # GET https://fosps.gravitatehealth.eu/ips/api/fhir/Patient/$summary?identifier=alicia-1
 
     title = TITLE_DOC[language]
     print(SERVER_URL)
-    ips = requests.get(
-        SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
-    )
+    if ips is None:
+        # print(ips)
+        ips = requests.get(
+            SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
+        ).json()
     # print(ips)
-    gender, age, diagnostics, medications = process_ips(ips.json())
+    gender, age, diagnostics, medications = process_ips(ips)
 
     # print(language, epi, gender, age, diagnostics, medications)
     if lenses == "lens-summary":
@@ -63,7 +84,7 @@ def lens_app(bundle):
             language, drug_name, gender, age, diagnostics, medications, model
         )
     # Return the JSON response
-    # print(response)
+    print(response)
     json_obj = {
         "resourceType": "Composition",
         "id": "example",
@@ -104,8 +125,8 @@ def lens_app(bundle):
                     ]
                 },
                 "text": {
-                    "status": "generated",
-                    "div": '<div xmlns="http://www.w3.org/1999/xhtml">\n\t\t\t\t<p>History of family member diseases - not available</p>\n\t\t\t</div>',
+                    "status": "additional",
+                    "div": "",
                 },
             },
         ],

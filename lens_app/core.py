@@ -11,7 +11,7 @@ load_dotenv()
 
 SERVER_URL = os.getenv("SERVER_URL")
 MODEL_URL = os.getenv("MODEL_URL")
-
+print(MODEL_URL)
 client = Client(host=MODEL_URL)
 
 if MODEL_URL is None:
@@ -262,25 +262,35 @@ def summarize2(
         response = result["message"]["content"]
 
     if "mistral" in model:
-        result = requests.post(
-            MODEL_URL + "/api/chat",
-            json={
-                "model": "mistral",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are helping a patient understand his medication and therapeutic. Your response should be to try to highlight most important issues about a medication. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of the most important issues. You want to focus on providing understandble information, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics. You will responde in "
-                        + lang,
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-                "stream": "false",
-            },
+        systemMessage = (
+            """
+        You must follow this indications extremety strictly:\n
+        1. You must answer in """
+            + lang
+            + """ \n
+        2. You must provide a summary of the medication and its pros and cons. \n
+        3. You must take into account the patient information. \n
+        4. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
+        5. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        """
         )
-        response = parse_response(result.text, type="chat")
+
+        print("prompt is:" + prompt)
+
+        prompt_message = prompt
+        result = client.chat(
+            model="mistral",
+            messages=[
+                {"content": systemMessage, "role": "system"},
+                {"content": prompt_message, "role": "assistant"},
+            ],
+            stream=False,
+            keep_alive="0m",
+        )
+
+        response = result["message"]["content"]
+
+        # response = parse_response(result.text, type="chat")
 
     return {
         "response": response,

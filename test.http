@@ -1,12 +1,27 @@
 ### Test the FHIR server
 
-GET http://localhost:5005/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary
+GET http://localhost:5005/summary/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary
 
 ### Test the FHIR server - summary 2
 
-GET http://localhost:5005/focusing/focus/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary-2&model=gpt-4
+GET http://localhost:5005/summary/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary-2
 
 
 #### 
 
 POST https://gravitate-health.lst.tfo.upm.es/bundlepackageleaflet-es-94a96e39cfdcd8b378d12dd4063065f9?preprocessors=preprocessing-service-manual&lenses=lens-selector-mvp2_proxy-pregnancy&patientIdentifier=alicia-1
+
+
+### Test the FHIR server - summary 2 with sent IPS
+
+POST http://localhost:5005/summary/bundlepackageleaflet-es-29436a85dac3ea374adb3fa64cfd2578?preprocessors=preprocessing-service-manual&lenses=lens-summary-2&model=mistral
+content-type: application/json
+
+< ../gravitate-health/tests/examples/dk2.json
+
+
+### Test the FHIR server - summary 2 with sent IPS
+POST http://localhost:5005/summary?preprocessors=preprocessing-service-manual&lenses=lens-summary-2&model=mistral&patientIdentifier=alicia-1
+content-type: application/json
+
+< ../gravitate-health/tests/examples/preprocessed-biktarvy.json
