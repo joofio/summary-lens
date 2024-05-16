@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: external-summary-lens-python
-        image: gravitate-registry.cr.de-fra.ionos.com/external-summary-lens-python:devserver
+        image: gravitate-registry.cr.de-fra.ionos.com/external-summary-lens-python:dev
         imagePullPolicy: Always
         env:
         - name: SERVER_URL

@@ -56,11 +56,12 @@ def lens_app(bundleid=None):
         if epibundle is None and bundleid is None:
             return "Error: missing EPI", 404
 
-    if epibundle is None:
+    if epibundle == None:
         print("epibundle is none")
         # print(epibundle)
         # print(bundleid)
         print(SERVER_URL + "epi/api/fhir/Bundle/" + bundleid)
+        print(ips)
         epibundle = requests.get(SERVER_URL + "epi/api/fhir/Bundle/" + bundleid).json()
     print(epibundle)
     language, epi, drug_name = process_bundle(epibundle)
@@ -68,11 +69,12 @@ def lens_app(bundleid=None):
 
     title = TITLE_DOC[language]
     print(SERVER_URL)
-    if ips is None:
+    if ips == None:
         # print(ips)
         ips = requests.get(
             SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
         ).json()
+        print(ips)
     # print(ips)
     gender, age, diagnostics, medications = process_ips(ips)
 

@@ -3,7 +3,6 @@ from fhirpathpy import evaluate
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
-import requests
 import json
 from ollama import Client
 
@@ -103,7 +102,6 @@ def process_bundle(bundle):
 
 
 def process_ips(ips):
-    print(ips)
     pat = evaluate(ips, "Bundle.entry.where(resource.resourceType=='Patient')", [])[0][
         "resource"
     ]
