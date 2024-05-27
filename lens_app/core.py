@@ -240,6 +240,7 @@ def summarize2(
         3. You must take into account the patient information. \n
         4. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
         5. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        6. The answer must be IN HTML format. \n
         """
         )
 
