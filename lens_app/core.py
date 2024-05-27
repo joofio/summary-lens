@@ -255,7 +255,7 @@ def summarize2(
                 {"content": prompt_message, "role": "assistant"},
             ],
             stream=False,
-            keep_alive="0m",
+            keep_alive="-1m",
         )
 
         response = result["message"]["content"]
