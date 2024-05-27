@@ -5,6 +5,7 @@ import os
 from openai import OpenAI
 import json
 from ollama import Client
+import markdown
 
 load_dotenv()
 
@@ -240,7 +241,6 @@ def summarize2(
         3. You must take into account the patient information. \n
         4. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
         5. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
-        6. The answer must be IN HTML format, and converting all markdown on HTML. Asterisks (*) must be interpreted as list items (<li></li>) in an unordered list (<ul></ul>). \n
         """
         )
 
@@ -287,7 +287,9 @@ def summarize2(
             keep_alive="0m",
         )
 
-        response = result["message"]["content"]
+        response_markdown = result["message"]["content"]
+
+        response = markdown.markdown(response_markdown)
 
         # response = parse_response(result.text, type="chat")
 
