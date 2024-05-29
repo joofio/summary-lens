@@ -6,6 +6,7 @@ from openai import OpenAI
 import json
 from ollama import Client
 import markdown
+import re
 
 load_dotenv()
 
@@ -258,7 +259,18 @@ def summarize2(
             keep_alive="-1m",
         )
 
-        response = result["message"]["content"]
+
+        response_markdown = result["message"]["content"]
+
+        print("Raw response: " + response_markdown)
+
+        response_markdown = response_markdown.strip()
+
+        print("Stripped response: " + response_markdown)
+
+        response = markdown.markdown(response_markdown)
+
+        response = response.replace("\n", "")
 
     if "mistral" in model:
         systemMessage = (
@@ -289,7 +301,17 @@ def summarize2(
 
         response_markdown = result["message"]["content"]
 
+        response_markdown = result["message"]["content"]
+
+        print("Raw response: " + response_markdown)
+
+        response_markdown = response_markdown.strip()
+
+        print("Stripped response: " + response_markdown)
+
         response = markdown.markdown(response_markdown)
+
+        response = response.replace("\n", "")
 
         # response = parse_response(result.text, type="chat")
 
