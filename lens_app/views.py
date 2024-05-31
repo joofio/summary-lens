@@ -26,6 +26,7 @@ def lens_app(bundleid=None):
     TITLE_DOC = {
         "en": "Electronic Product Information Summary",
         "es": "Resumo del Prospecto",
+        "da": "Resumé af indlægsseddel",
     }
     epibundle = None
     ips = None
