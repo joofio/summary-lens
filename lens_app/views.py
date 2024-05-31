@@ -26,6 +26,9 @@ def lens_app(bundleid=None):
     TITLE_DOC = {
         "en": "Electronic Product Information Summary",
         "es": "Resumen del Prospecto",
+        "dk": "Resumé af indlægsseddel",
+        "da": "Resumé af indlægsseddel",
+        "no": "Resumé av pakningsvedlegget",
     }
     epibundle = None
     ips = None
@@ -38,7 +41,7 @@ def lens_app(bundleid=None):
     if lenses not in ["lens-summary", "lens-summary-2"]:
         return "Error: lens not supported", 404
     if preprocessor not in ["preprocessing-service-manual"]:
-        return "Error: preprocessor not supported", 404
+        return "Error: or not supported", 404
 
     if request.method == "GET":
         if preprocessor == "" or lenses == "" or patientIdentifier == "":

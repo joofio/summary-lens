@@ -1,4 +1,5 @@
 from datetime import datetime
+from shlex import join
 from fhirpathpy import evaluate
 from dotenv import load_dotenv
 import os
@@ -62,6 +63,8 @@ LANGUAGE_MAP = {
     "eu": "Basque",
     "ca": "Catalan",
     "gl": "Galician",
+    "dk": "Danish",
+    "da": "Danish",
 }
 
 
@@ -128,8 +131,10 @@ def process_ips(ips):
     )
     diagnostics = []
     # print(conditions)
-    for cond in conditions:
-        diagnostics.append(cond["resource"]["code"]["text"])
+
+    if (conditions):
+        for cond in conditions:
+            diagnostics.append(cond["resource"]["code"]["coding"][0]["display"])
 
     medications = evaluate(
         ips, "Bundle.entry.where(resource.resourceType=='Medication')", []
@@ -190,21 +195,19 @@ def summarize2(
     # print(epi_text)
     # model = "gpt-4"
     lang = LANGUAGE_MAP[language]
+
+    diagnostics_texts = ""
+
+    if (diagnostics):
+        diagnostics_texts = "with the following diagnostics "
+        for diag in diagnostics:
+            diagnostics_texts += diag + ", "
+    
+    else:
+        diagnostics_texts = "without any diagnostics"
+
     prompt = (
-        "The drug name is "
-        + drug_name
-        + ". Please explain it in a way a person with "
-        + str(age)
-        + " years old can understand. Also take into account the patient is a "
-        + gender
-        + " with the following diagnostics "
-        + "".join(diagnostics)
-        + " and medications "
-        + "".join(medications)
-        + ". Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in "
-        + lang
-        + " and this is totally mandatory. Otherwise I will not understand."
-        + "\n\nAnswer:\n\n"
+        f"The drug name is {drug_name}. Please explain it in a way a person with {age} years old can understand. Also take into account the patient is a {gender} {diagnostics_texts}and medications {medications}. Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in {lang} and this is totally mandatory. Otherwise I will not understand.\n\nAnswer:\n\n"
     )
     if "gpt" in model:
         chat_completion = client.chat.completions.create(
@@ -296,7 +299,7 @@ def summarize2(
                 {"content": prompt_message, "role": "assistant"},
             ],
             stream=False,
-            keep_alive="0m",
+            keep_alive="-1m",
         )
 
         response_markdown = result["message"]["content"]
