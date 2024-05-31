@@ -167,8 +167,14 @@ components:
                       type: string
                       example: 'Summary'
                     text:
-                      type: string
-                      example: 'Summary of the ePI'
+                      type: object
+                      properties:
+                        div:
+                          type: string
+                          example: '<div xmlns="http://www.w3.org/1999/xhtml">Summary of the ePI</div>'
+                        status:
+                          type: string
+                          example: 'generated'
                     code:
                       type: object
                       properties:
