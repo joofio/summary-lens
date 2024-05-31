@@ -20,6 +20,7 @@ paths:
       responses:
         '200':
           description: OK
+          $ref: "#/components/responses/summaryResponse"
         '500':
           description: Internal Server Error
     post:
@@ -43,6 +44,7 @@ paths:
       responses:
         '200':
           description: OK
+          $ref: "#/components/responses/summaryResponse"
         '500':
           description: Internal Server Error
 
@@ -83,3 +85,19 @@ components:
       required: true
       schema:
         type: string
+  responses:
+    summaryResponse:
+      description: 'Summary response'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              summary:
+                type: string
+              prompt:
+                type: string
+              datetime:
+                type: string
+              model:
+                type: string
