@@ -120,22 +120,24 @@ components:
                           type: string
                           example: 'Consult note'
               category:
-                type: object
-                properties:
-                  coding:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        system:
-                          type: string
-                          example: 'http://terminology.hl7.org/CodeSystem/observation-category'
-                        code:
-                          type: string
-                          example: 'LPL183761-8'
-                        display:
-                          type: string
-                          example: 'Report'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    coding:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          system:
+                            type: string
+                            example: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                          code:
+                            type: string
+                            example: 'LPL183761-8'
+                          display:
+                            type: string
+                            example: 'Report'
               author:
                 type: array
                 items:
