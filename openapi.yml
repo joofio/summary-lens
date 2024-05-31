@@ -22,6 +22,30 @@ paths:
           description: OK
         '500':
           description: Internal Server Error
+    post:
+      tags:
+      - Lenses
+      description: 'Request for a summary of an ePI using LLM AI'
+      parameters:
+      - $ref: '#/components/parameters/preprocessors'
+      - $ref: '#/components/parameters/lenses'
+      - $ref: '#/components/parameters/model'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                epi:
+                  type: object
+                ips:
+                  type: object
+      responses:
+        '200':
+          description: OK
+        '500':
+          description: Internal Server Error
+
 components:
   parameters:
     epi:
