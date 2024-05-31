@@ -150,6 +150,14 @@ components:
               title:
                 type: string
                 example: 'Summary'
+              note:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                      example: 'Summary of the ePI'
               section:
                 type: array
                 items:
