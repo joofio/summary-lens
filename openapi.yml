@@ -93,11 +93,88 @@ components:
           schema:
             type: object
             properties:
-              summary:
+              resourceType:
                 type: string
-              prompt:
+                example: 'Composition'
+              id:
                 type: string
-              datetime:
+                example: 'summary'
+              status:
                 type: string
-              model:
+                example: 'final'
+              type:
+                type: object
+                properties:
+                  coding:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        system:
+                          type: string
+                          example: 'http://loinc.org'
+                        code:
+                          type: string
+                          example: '11488-4'
+                        display:
+                          type: string
+                          example: 'Consult note'
+              category:
+                type: object
+                properties:
+                  coding:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        system:
+                          type: string
+                          example: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                        code:
+                          type: string
+                          example: 'LPL183761-8'
+                        display:
+                          type: string
+                          example: 'Report'
+              author:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    display:
+                      type: string
+                      example: 'GH lens'
+              date:
                 type: string
+                example: '2021-06-01T00:00:00Z'
+              title:
+                type: string
+                example: 'Summary'
+              section:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      example: 'Summary'
+                    text:
+                      type: string
+                      example: 'Summary of the ePI'
+                    code:
+                      type: object
+                      properties:
+                        coding:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              system:
+                                type: string
+                                example: 'http://loinc.org'
+                              code:
+                                type: string
+                                example: '11488-4'
+                              display:
+                                type: string
+                                example: 'Consult note'
