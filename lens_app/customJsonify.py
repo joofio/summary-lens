@@ -1,18 +1,11 @@
-from flask.json import JSONEncoder
-from datetime import date
+from flask.json.provider import DefaultJSONProvider
+from datetime import datetime
 
+class FhirJSONProvider(DefaultJSONProvider):
+    def __init__(self, app):
+        super().__init__(app)
 
-class CustomJSONEncoder(JSONEncoder):
-    def default(self, obj):
-        try:
-            if isinstance(obj, date):
-                return obj.isoformat()
-            iterable = iter(obj)
-        except TypeError:
-            pass
-        else:
-            return list(iterable)
-        return JSONEncoder.default(self, obj)
-
-app = Flask(__name__)
-app.json_encoder = CustomJSONEncoder
+    def default(self, o):
+        if isinstance(o, datetime):
+            return str(o)
+        return super().default(self, o)
