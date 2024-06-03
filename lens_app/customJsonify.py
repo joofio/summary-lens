@@ -7,5 +7,5 @@ class FhirJSONProvider(DefaultJSONProvider):
 
     def default(self, o):
         if isinstance(o, datetime):
-            return str(o)
+            return str(o.isoformat())
         return super().default(self, o)
