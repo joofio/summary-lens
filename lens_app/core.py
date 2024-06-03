@@ -321,6 +321,6 @@ def summarize2(
     return {
         "response": response,
         "prompt": prompt,
-        "datetime": datetime.now().isoformat(),
+        "datetime": datetime.now(),
         "model": model,
     }

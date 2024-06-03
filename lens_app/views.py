@@ -1,3 +1,4 @@
+import json
 from flask import render_template, request, jsonify
 from lens_app import app
 import requests
@@ -137,7 +138,7 @@ def lens_app(bundleid=None):
         ],
     }
     comp = Composition.parse_obj(json_obj)
-    comp.date = str(response["datetime"])
+    comp.date = str(response["datetime"]) + ""
     comp.author[0].display = response["model"]
     note = Annotation.construct()
     note.text = response["prompt"]
