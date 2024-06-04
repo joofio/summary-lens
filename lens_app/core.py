@@ -260,6 +260,7 @@ def summarize2(
             ],
             stream=False,
             keep_alive="-1m",
+            options={"seed": 1234, "temperature": 0},
         )
 
 
