@@ -1,3 +1,4 @@
+import json
 from flask import render_template, request, jsonify
 from lens_app import app
 import requests
@@ -23,10 +24,14 @@ def hello():
 @app.route("/summary", methods=["GET", "POST"])
 @app.route("/summary/<bundleid>", methods=["GET", "POST"])
 def lens_app(bundleid=None):
-    TITLE_DOC = {
+
+        TITLE_DOC = {
         "en": "Electronic Product Information Summary",
-        "es": "Resumo del Prospecto",
+        "es": "Resumen del Prospecto",
+        "it": "Sintesi del prospetto",
+        "dk": "Resumé af indlægsseddel",
         "da": "Resumé af indlægsseddel",
+        "no": "Resumé av pakningsvedlegget",
     }
     epibundle = None
     ips = None
@@ -57,11 +62,12 @@ def lens_app(bundleid=None):
         if epibundle is None and bundleid is None:
             return "Error: missing EPI", 404
 
-    if epibundle is None:
+    if epibundle == None:
         print("epibundle is none")
         # print(epibundle)
         # print(bundleid)
         print(SERVER_URL + "epi/api/fhir/Bundle/" + bundleid)
+        print(ips)
         epibundle = requests.get(SERVER_URL + "epi/api/fhir/Bundle/" + bundleid).json()
     print(epibundle)
     language, epi, drug_name = process_bundle(epibundle)
@@ -69,11 +75,12 @@ def lens_app(bundleid=None):
 
     title = TITLE_DOC[language]
     print(SERVER_URL)
-    if ips is None:
+    if ips == None:
         # print(ips)
         ips = requests.get(
             SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
         ).json()
+        print(ips)
     # print(ips)
     gender, age, diagnostics, medications = process_ips(ips)
 
@@ -133,7 +140,7 @@ def lens_app(bundleid=None):
         ],
     }
     comp = Composition.parse_obj(json_obj)
-    comp.date = str(response["datetime"])
+    comp.date = response["datetime"]
     comp.author[0].display = response["model"]
     note = Annotation.construct()
     note.text = response["prompt"]

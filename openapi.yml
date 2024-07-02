@@ -20,8 +20,34 @@ paths:
       responses:
         '200':
           description: OK
+          $ref: "#/components/responses/summaryResponse"
         '500':
           description: Internal Server Error
+    post:
+      tags:
+      - Lenses
+      description: 'Request for a summary of an ePI using LLM AI'
+      parameters:
+      - $ref: '#/components/parameters/preprocessors'
+      - $ref: '#/components/parameters/lenses'
+      - $ref: '#/components/parameters/model'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                epi:
+                  type: object
+                ips:
+                  type: object
+      responses:
+        '200':
+          description: OK
+          $ref: "#/components/responses/summaryResponse"
+        '500':
+          description: Internal Server Error
+
 components:
   parameters:
     epi:
@@ -59,3 +85,112 @@ components:
       required: true
       schema:
         type: string
+  responses:
+    summaryResponse:
+      description: 'Summary response'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              resourceType:
+                type: string
+                example: 'Composition'
+              id:
+                type: string
+                example: 'summary'
+              status:
+                type: string
+                example: 'final'
+              type:
+                type: object
+                properties:
+                  coding:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        system:
+                          type: string
+                          example: 'http://loinc.org'
+                        code:
+                          type: string
+                          example: '11488-4'
+                        display:
+                          type: string
+                          example: 'Consult note'
+              category:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    coding:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          system:
+                            type: string
+                            example: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                          code:
+                            type: string
+                            example: 'LPL183761-8'
+                          display:
+                            type: string
+                            example: 'Report'
+              author:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    display:
+                      type: string
+                      example: 'GH lens'
+              date:
+                type: string
+                example: '2021-06-01T00:00:00Z'
+              title:
+                type: string
+                example: 'Summary'
+              note:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                      example: 'Summary of the ePI'
+              section:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      example: 'Summary'
+                    text:
+                      type: object
+                      properties:
+                        div:
+                          type: string
+                          example: '<div xmlns="http://www.w3.org/1999/xhtml">Summary of the ePI</div>'
+                        status:
+                          type: string
+                          example: 'generated'
+                    code:
+                      type: object
+                      properties:
+                        coding:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              system:
+                                type: string
+                                example: 'http://loinc.org'
+                              code:
+                                type: string
+                                example: '11488-4'
+                              display:
+                                type: string
+                                example: 'Consult note'
