@@ -192,46 +192,50 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
     epi_text = transform_fhir_epi(epi)
 
     lang = LANGUAGE_MAP[language]
+    print("++++" * 40, lang)
     prompt = (
-        "Can you provide a comprehensive summary of the given text? The summary should cover all the key points and main ideas presented in the original text, while also condensing the information into a concise and easy-to-understand format. Please ensure that the summary includes relevant details and examples that support the main ideas, while avoiding any unnecessary information or repetition. The length of the summary should be appropriate for the length and complexity of the original text, providing a clear and accurate overview without omitting any important information."
-        + "Also take into account the patient is a "
+        "Write a concise summary of the following text delimited by triple backquotes. Return your response in bullet points which covers the key points of the text. "
+        + "You must only use the information provided in the text and avoid introducing any new information. "
+        + "The summary should be clear, accurate, and comprehensive, highlighting the main ideas and key details of the text. "
+        + "It is of extreme importance that you summarize the document in "
+        + lang
+        + "and this is totally mandatory. Otherwise the reader will not understand. \n"
+        + "It should be written in a way that a person of gender: "
         + gender
-        + " of "
+        + " and with "
         + str(age)
-        + " of age with the following diagnostics: "
-        + " and ".join(diagnostics)
-        + " and medications: "
-        + " and ".join(medications)
-        + '"'
+        + " of age should be able to understand."
+        "You must reference highlight something that relates with the following topics and terms:"
+        + "|".join(diagnostics)
+        + "|".join(medications)
+        + "```"
         + epi_text
-        + '"#####\n'
+        + "```"
+        + "\nBULLET POINT SUMMARY:"
     )
     print("the prompt will be:" + prompt)
 
     systemMessage = (
         """
         As a professional summarizer, create a concise and comprehensive summary of the provided text, be it an article, post, conversation, or passage, while adhering to these guidelines:
-
-        1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
-        2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
-        3. Rely strictly on the provided text, without including external information.
-        4. Format the summary in paragraph form for easy understanding.
-        5. Ensure the summary is well-structured, coherent, and logically organized.
-        6. You must answer in """
-        + lang
-        + """ \n
         
+        1. You must answer in """
+        + lang
+        + """and this is totally mandatory. Otherwise I will not understand. \n
+        
+        2. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
+        3. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
+        4. Rely strictly on the provided text, without including external information.
+
         7. You must take into account the patient information. \n
         8. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
         9. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
         10. You MUST start with the summary without introduction.\n
-        11. Take into account the patient is a person of """
-        + str(age)
-        + " of age with the following diagnostics: "
-        + " and ".join(diagnostics)
-        + " and with the following medications: "
-        + " and ".join(medications)
+        """
     )
+    #        5. Format the summary in paragraph form for easy understanding.
+    #        6. Ensure the summary is well-structured, coherent, and logically organized.
+
     if "groq" in model:
         chat_completion = groqclient.chat.completions.create(
             messages=[
