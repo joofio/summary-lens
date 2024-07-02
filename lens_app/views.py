@@ -24,8 +24,7 @@ def hello():
 @app.route("/summary", methods=["GET", "POST"])
 @app.route("/summary/<bundleid>", methods=["GET", "POST"])
 def lens_app(bundleid=None):
-
-        TITLE_DOC = {
+    TITLE_DOC = {
         "en": "Electronic Product Information Summary",
         "es": "Resumen del Prospecto",
         "it": "Sintesi del prospetto",
