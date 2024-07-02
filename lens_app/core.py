@@ -8,6 +8,7 @@ import json
 from ollama import Client
 import markdown
 import re
+from bs4 import BeautifulSoup
 
 load_dotenv()
 
@@ -132,7 +133,7 @@ def process_ips(ips):
     diagnostics = []
     # print(conditions)
 
-    if (conditions):
+    if conditions:
         for cond in conditions:
             diagnostics.append(cond["resource"]["code"]["coding"][0]["display"])
 
@@ -146,18 +147,58 @@ def process_ips(ips):
     return gender, age, diagnostics, meds
 
 
-def summarize(language, epi, gender, age, diagnostics, medications):
-    epi_text = [k + v for k, v in epi[0].items()]
-    model = "gpt-4"
+def transform_fhir_epi(epi):
+    # print(epi)
+    new_epi = ""
+    idx = 0
 
-    # print(epi_text)
+    for ep in epi:
+        # print("eeeeeeee", ep)
+        idx += 1
+        for k, v in ep.items():
+            if idx < 8:
+                #  print(idx, "----", k, v)
+                soup = BeautifulSoup(v, "html.parser")
+                cleaned_html = ""
+                # Remove all text nodes
+                for element in soup.find_all(text=True):
+                    #  print(element)
+                    cleaned_html += element.extract() + " "
+
+                new_epi += "\n" + k + "\n\n" + cleaned_html
+    print("LENGTH", len(new_epi))
+    print("LENGTH", len(new_epi.split()))
+    return new_epi
+
+
+def format_response(res):
+    print("Raw response: " + res)
+
+    response_markdown = res.strip()
+
+    print("Stripped response: " + response_markdown)
+
+    response = markdown.markdown(response_markdown)
+
+    response = response.replace("\n", "")
+
+    return response
+
+
+def summarize(language, epi, gender, age, diagnostics, medications):
+    epi_text = transform_fhir_epi(epi)
+
     lang = LANGUAGE_MAP[language]
     prompt = (
-        "Please summarize this electronic patient information leaflet "
-        + epi_text[0]
-        + " in four paragraphs, taken into account that a person reading it is of the gender "
+        "Can you provide a comprehensive summary of the given text? The summary should cover all the key points and main ideas presented in the original text, while also condensing the information into a concise and easy-to-understand format. Please ensure that the summary includes relevant details and examples that support the main ideas, while avoiding any unnecessary information or repetition. The length of the summary should be appropriate for the length and complexity of the original text, providing a clear and accurate overview without omitting any important information."
+        + '"'
+        + epi_text
+        + '".\n'
+        + "Summarize the document based on the context below."
+        + "Context:\n"
+        + " The patient is a "
         + gender
-        + " and age "
+        + +" and age "
         + str(age)
         + " with the following diagnostics "
         + "and".join(diagnostics)
@@ -168,23 +209,34 @@ def summarize(language, epi, gender, age, diagnostics, medications):
     )
     print("the prompt will be:" + prompt)
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "system",
-                "content": "You are helping a patient better understand a electronic patient information leaflet. Your response should be to try to summarize the leaflet in two paragraphs. The patient is a person. The patient knows you do not provide health advice, but wants to get a summary of a very large and complicated document. You want to focus on summarizing the document, while providing information about counter indication of advice for the patient's medication, gender (like child bearing age and pregancy), other diagnostics",
-            },
-            {
-                "role": "user",
-                "content": prompt,
-            },
-        ],
-        model=model,
+    systemMessage = (
+        """
+        You must follow this indications extremety strictly:\n
+        1. You must answer in """
+        + lang
+        + """ \n
+        2. You must take into account the patient information. \n
+        3. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
+        4. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        """
     )
+    result = client.chat(
+        model="llama3",
+        messages=[
+            {"content": systemMessage, "role": "system"},
+            {"content": prompt, "role": "assistant"},
+        ],
+        stream=False,
+        keep_alive="-1m",
+        options={"seed": 1234, "temperature": 0},
+    )
+
+    response = format_response(result["message"]["content"])
+
     return {
-        "response": chat_completion.choices[0].message.content,
+        "response": response,
         "prompt": prompt,
-        "datetime": datetime.now().isoformat(),
+        "datetime": datetime.now(),
         "model": model,
     }
 
@@ -198,17 +250,15 @@ def summarize2(
 
     diagnostics_texts = ""
 
-    if (diagnostics):
+    if diagnostics:
         diagnostics_texts = "with the following diagnostics "
         for diag in diagnostics:
             diagnostics_texts += diag + ", "
-    
+
     else:
         diagnostics_texts = "without any diagnostics"
 
-    prompt = (
-        f"The drug name is {drug_name}. Please explain it in a way a person with {age} years old can understand. Also take into account the patient is a {gender} {diagnostics_texts}and medications {medications}. Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in {lang} and this is totally mandatory. Otherwise I will not understand.\n\nAnswer:\n\n"
-    )
+    prompt = f"The drug name is {drug_name}. Please explain it in a way a person with {age} years old can understand. Also take into account the patient is a {gender} {diagnostics_texts}and medications {medications}. Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in {lang} and this is totally mandatory. Otherwise I will not understand.\n\nAnswer:\n\n"
     if "gpt" in model:
         chat_completion = client.chat.completions.create(
             messages=[
@@ -226,15 +276,6 @@ def summarize2(
         response = (chat_completion.choices[0].message.content,)
 
     if "graviting-llama" in model:
-        # result = requests.post(
-        #     "http://localhost:11434/api/generate",
-        #     json={
-        #         "model": "llama2",
-        #         "prompt": prompt,
-        #     },
-        # )
-        #  print(response)
-
         systemMessage = (
             """
         You must follow this indications extremety strictly:\n
@@ -263,18 +304,7 @@ def summarize2(
             options={"seed": 1234, "temperature": 0},
         )
 
-
-        response_markdown = result["message"]["content"]
-
-        print("Raw response: " + response_markdown)
-
-        response_markdown = response_markdown.strip()
-
-        print("Stripped response: " + response_markdown)
-
-        response = markdown.markdown(response_markdown)
-
-        response = response.replace("\n", "")
+        response = format_response(result["message"]["content"])
 
     if "mistral" in model:
         systemMessage = (
@@ -303,21 +333,7 @@ def summarize2(
             keep_alive="-1m",
         )
 
-        response_markdown = result["message"]["content"]
-
-        response_markdown = result["message"]["content"]
-
-        print("Raw response: " + response_markdown)
-
-        response_markdown = response_markdown.strip()
-
-        print("Stripped response: " + response_markdown)
-
-        response = markdown.markdown(response_markdown)
-
-        response = response.replace("\n", "")
-
-        # response = parse_response(result.text, type="chat")
+        response = format_response(result["message"]["content"])
 
     return {
         "response": response,

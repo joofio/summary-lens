@@ -8,3 +8,4 @@ requests
 fhir.resources
 ollama
 markdown
+beautifulsoup4
