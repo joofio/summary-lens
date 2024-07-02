@@ -9,6 +9,7 @@ from ollama import Client
 import markdown
 import re
 from bs4 import BeautifulSoup
+from groq import Groq
 
 load_dotenv()
 
@@ -23,6 +24,9 @@ if MODEL_URL is None:
         api_key=os.getenv("OPENAI_KEY"),
     )
 
+groqclient = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
 
 LANGUAGE_MAP = {
     "es": "Spanish",
@@ -64,7 +68,6 @@ LANGUAGE_MAP = {
     "eu": "Basque",
     "ca": "Catalan",
     "gl": "Galician",
-    "dk": "Danish",
     "da": "Danish",
 }
 
@@ -156,7 +159,7 @@ def transform_fhir_epi(epi):
         # print("eeeeeeee", ep)
         idx += 1
         for k, v in ep.items():
-            if idx < 8:
+            if idx not in [0, 1, 8]:
                 #  print(idx, "----", k, v)
                 soup = BeautifulSoup(v, "html.parser")
                 cleaned_html = ""
@@ -185,59 +188,80 @@ def format_response(res):
     return response
 
 
-def summarize(language, epi, gender, age, diagnostics, medications):
+def summarize(language, epi, gender, age, diagnostics, medications, model):
     epi_text = transform_fhir_epi(epi)
 
     lang = LANGUAGE_MAP[language]
     prompt = (
         "Can you provide a comprehensive summary of the given text? The summary should cover all the key points and main ideas presented in the original text, while also condensing the information into a concise and easy-to-understand format. Please ensure that the summary includes relevant details and examples that support the main ideas, while avoiding any unnecessary information or repetition. The length of the summary should be appropriate for the length and complexity of the original text, providing a clear and accurate overview without omitting any important information."
+        + "Also take into account the patient is a "
+        + gender
+        + " of "
+        + str(age)
+        + " of age with the following diagnostics: "
+        + " and ".join(diagnostics)
+        + " and medications: "
+        + " and ".join(medications)
         + '"'
         + epi_text
-        + '".\n'
-        + "Summarize the document based on the context below."
-        + "Context:\n"
-        + " The patient is a "
-        + gender
-        + +" and age "
-        + str(age)
-        + " with the following diagnostics "
-        + "and".join(diagnostics)
-        + " and medications "
-        + " and ".join(medications)
-        + ". Please take into account possible interactions and advice for the patient charachteristcs and try to link to information in the leaflet. Please respond in "
-        + lang
+        + '"#####\n'
     )
     print("the prompt will be:" + prompt)
 
     systemMessage = (
         """
-        You must follow this indications extremety strictly:\n
-        1. You must answer in """
+        As a professional summarizer, create a concise and comprehensive summary of the provided text, be it an article, post, conversation, or passage, while adhering to these guidelines:
+
+        1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
+        2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
+        3. Rely strictly on the provided text, without including external information.
+        4. Format the summary in paragraph form for easy understanding.
+        5. Ensure the summary is well-structured, coherent, and logically organized.
+        6. You must answer in """
         + lang
         + """ \n
-        2. You must take into account the patient information. \n
-        3. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
-        4. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
-        """
+        
+        7. You must take into account the patient information. \n
+        8. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
+        9. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        10. You MUST start with the summary without introduction.\n
+        11. Take into account the patient is a person of """
+        + str(age)
+        + " of age with the following diagnostics: "
+        + " and ".join(diagnostics)
+        + " and with the following medications: "
+        + " and ".join(medications)
     )
-    result = client.chat(
-        model="llama3",
-        messages=[
-            {"content": systemMessage, "role": "system"},
-            {"content": prompt, "role": "assistant"},
-        ],
-        stream=False,
-        keep_alive="-1m",
-        options={"seed": 1234, "temperature": 0},
-    )
+    if "groq" in model:
+        chat_completion = groqclient.chat.completions.create(
+            messages=[
+                {"role": "system", "content": systemMessage},
+                {"role": "user", "content": prompt},
+            ],
+            model="llama3-70b-8192",
+            temperature=0.05,
+        )
 
-    response = format_response(result["message"]["content"])
+        response = format_response(chat_completion.choices[0].message.content)
+    else:
+        result = client.chat(
+            model="llama3",
+            messages=[
+                {"content": systemMessage, "role": "system"},
+                {"content": prompt, "role": "assistant"},
+            ],
+            stream=False,
+            keep_alive="-1m",
+            options={"seed": 1234, "temperature": 0},
+        )
+
+        response = format_response(result["message"]["content"])
 
     return {
         "response": response,
         "prompt": prompt,
         "datetime": datetime.now(),
-        "model": model,
+        "model": "llama3",
     }
 
 
@@ -325,6 +349,35 @@ def summarize2(
         prompt_message = prompt
         result = client.chat(
             model="mistral",
+            messages=[
+                {"content": systemMessage, "role": "system"},
+                {"content": prompt_message, "role": "assistant"},
+            ],
+            stream=False,
+            keep_alive="-1m",
+        )
+
+        response = format_response(result["message"]["content"])
+
+    if "llama3" in model:
+        systemMessage = (
+            """
+        You must follow this indications extremety strictly:\n
+        1. You must answer in """
+            + lang
+            + """ \n
+        2. You must provide a summary of the medication and its pros and cons. \n
+        3. You must take into account the patient information. \n
+        4. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
+        5. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        """
+        )
+
+        print("prompt is:" + prompt)
+
+        prompt_message = prompt
+        result = client.chat(
+            model="llama3",
             messages=[
                 {"content": systemMessage, "role": "system"},
                 {"content": prompt_message, "role": "assistant"},

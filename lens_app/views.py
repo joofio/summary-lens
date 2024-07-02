@@ -85,7 +85,9 @@ def lens_app(bundleid=None):
 
     # print(language, epi, gender, age, diagnostics, medications)
     if lenses == "lens-summary":
-        response = summarize(language, epi, gender, age, diagnostics, medications)
+        response = summarize(
+            language, epi, gender, age, diagnostics, medications, model
+        )
     if lenses == "lens-summary-2":
         response = summarize2(
             language, drug_name, gender, age, diagnostics, medications, model

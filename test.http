@@ -1,15 +1,15 @@
-### Test the FHIR server
+## Local
 
-GET http://localhost:5005/summary/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary
+### Test the groq
+GET http://localhost:5005/summary/bundlepackageleaflet-es-29436a85dac3ea374adb3fa64cfd2578?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary&model=groq
+
+### Test the basic llama
+
+GET http://localhost:5005/summary/bundlepackageleaflet-es-29436a85dac3ea374adb3fa64cfd2578?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary&model=llama3
 
 ### Test the FHIR server - summary 2
 
-GET http://localhost:5005/summary/bundlepackageleaflet-es-56a32a5ee239fc834b47c10db1faa3fd?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary-2
-
-
-#### 
-
-POST https://gravitate-health.lst.tfo.upm.es/bundlepackageleaflet-es-94a96e39cfdcd8b378d12dd4063065f9?preprocessors=preprocessing-service-manual&lenses=lens-selector-mvp2_proxy-pregnancy&patientIdentifier=alicia-1
+GET http://localhost:5005/summary/bundlepackageleaflet-es-29436a85dac3ea374adb3fa64cfd2578?preprocessors=preprocessing-service-manual&patientIdentifier=Cecilia-1&lenses=lens-summary-2&model=llama3
 
 
 ### Test the FHIR server - summary 2 with sent IPS
@@ -25,3 +25,11 @@ POST http://localhost:5005/summary?preprocessors=preprocessing-service-manual&le
 content-type: application/json
 
 < ../gravitate-health/tests/examples/preprocessed-biktarvy.json
+
+
+### REMOTE
+
+
+#### 
+
+POST https://gravitate-health.lst.tfo.upm.es/bundlepackageleaflet-es-94a96e39cfdcd8b378d12dd4063065f9?preprocessors=preprocessing-service-manual&lenses=lens-selector-mvp2_proxy-pregnancy&patientIdentifier=alicia-1
