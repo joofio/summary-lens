@@ -1,5 +1,4 @@
-import json
-from flask import render_template, request, jsonify
+from flask import request, jsonify
 from lens_app import app
 import requests
 from lens_app.core import SERVER_URL, process_bundle, process_ips, summarize, summarize2
