@@ -75,8 +75,16 @@ def lens_app(bundleid=None):
     print(SERVER_URL)
     if ips is None:
         # print(ips)
-        ips = requests.get(
-            SERVER_URL + "ips/api/fhir/Patient/$summary?identifier=" + patientIdentifier
+        body = {
+            "resourceType" : "Parameters",
+            "id" : "example",
+            "parameter" : [{
+                "name" : "identifier",
+                "valueIdentifier" : {"value": patientIdentifier}
+            }]
+        }
+        ips = requests.post(
+            SERVER_URL + "ips/api/fhir/Patient/$summary", json=body, timeout=10
         ).json()
         print(ips)
     # print(ips)
