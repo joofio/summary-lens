@@ -18,7 +18,7 @@ for p in PAT:
         myreq = (
             HOST
             + e
-            + "?preprocessors=preprocessing-service-manual&patientIdentifier="
+            + "?patientIdentifier="
             + p
             + "&lenses=lens-summary-2&model=graviting-llama"
         )

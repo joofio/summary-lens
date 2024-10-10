@@ -1,5 +1,4 @@
 from datetime import datetime
-from shlex import join
 from fhirpathpy import evaluate
 from dotenv import load_dotenv
 import os
@@ -7,7 +6,6 @@ from openai import OpenAI
 import json
 from ollama import Client
 import markdown
-import re
 from bs4 import BeautifulSoup
 from groq import Groq
 
@@ -68,7 +66,6 @@ LANGUAGE_MAP = {
     "eu": "Basque",
     "ca": "Catalan",
     "gl": "Galician",
-    "da": "Danish",
 }
 
 
@@ -188,6 +185,77 @@ def format_response(res):
     return response
 
 
+def summarize_no_personalization(language, epi, model):
+    epi_text = transform_fhir_epi(epi)
+
+    lang = LANGUAGE_MAP[language]
+    print("++++" * 40, lang)
+    prompt = (
+        "Write a concise summary of the following text delimited by triple backquotes. Return your response in bullet points which covers the key points of the text. "
+        + "You must only use the information provided in the text and avoid introducing any new information. "
+        + "The summary should be clear, accurate, and comprehensive, highlighting the main ideas and key details of the text. "
+        + "It is of extreme importance that you summarize the document in "
+        + lang
+        + "and this is totally mandatory. Otherwise the reader will not understand. \n"
+        + "```"
+        + epi_text
+        + "```"
+        + "\nBULLET POINT SUMMARY:"
+    )
+    print("the prompt will be:" + prompt)
+
+    systemMessage = (
+        """
+        As a professional summarizer, create a concise and comprehensive summary of the provided text, be it an article, post, conversation, or passage, while adhering to these guidelines:
+        
+        1. You must answer in """
+        + lang
+        + """and this is totally mandatory. Otherwise I will not understand. \n
+        
+        2. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
+        3. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
+        4. Rely strictly on the provided text, without including external information.
+        5. You MUST be impersonal and refer to the patient as a person, but NEVER for its name.\n
+        6. You must be direct and not lose time on introducing the summary, and MUST NOT GREET the patient.\n
+        7. You MUST start with the summary without introduction.\n
+        """
+    )
+    #        5. Format the summary in paragraph form for easy understanding.
+    #        6. Ensure the summary is well-structured, coherent, and logically organized.
+
+    if "groq" in model:
+        chat_completion = groqclient.chat.completions.create(
+            messages=[
+                {"role": "system", "content": systemMessage},
+                {"role": "user", "content": prompt},
+            ],
+            model="llama3-70b-8192",
+            temperature=0.05,
+        )
+
+        response = format_response(chat_completion.choices[0].message.content)
+    else:
+        result = client.chat(
+            model="llama3",
+            messages=[
+                {"content": systemMessage, "role": "system"},
+                {"content": prompt, "role": "assistant"},
+            ],
+            stream=False,
+            keep_alive="-1m",
+            options={"seed": 1234, "temperature": 0},
+        )
+
+        response = format_response(result["message"]["content"])
+
+    return {
+        "response": response,
+        "prompt": prompt,
+        "datetime": datetime.now(),
+        "model": model,
+    }
+
+
 def summarize(language, epi, gender, age, diagnostics, medications, model):
     epi_text = transform_fhir_epi(epi)
 
@@ -265,7 +333,7 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
         "response": response,
         "prompt": prompt,
         "datetime": datetime.now(),
-        "model": "llama3",
+        "model": model,
     }
 
 

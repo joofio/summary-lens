@@ -1,7 +1,14 @@
 from flask import request, jsonify
 from lens_app import app
 import requests
-from lens_app.core import SERVER_URL, process_bundle, process_ips, summarize, summarize2
+from lens_app.core import (
+    SERVER_URL,
+    process_bundle,
+    process_ips,
+    summarize,
+    summarize2,
+    summarize_no_personalization,
+)
 from fhir.resources.composition import Composition
 from fhir.resources.annotation import Annotation
 
@@ -34,19 +41,15 @@ def lens_app(bundleid=None):
     epibundle = None
     ips = None
     # Get the query parameters from the request
-    preprocessor = request.args.get("preprocessors", "")
     lenses = request.args.get("lenses", "")
     patientIdentifier = request.args.get("patientIdentifier", "")
     model = request.args.get("model", "")
-    print(preprocessor, lenses, patientIdentifier)
+    print(lenses, patientIdentifier)
     if lenses not in ["lens-summary", "lens-summary-2"]:
         return "Error: lens not supported", 404
-    if preprocessor not in ["preprocessing-service-manual"]:
-        return "Error: preprocessor not supported", 404
 
-    if request.method == "GET":
-        if preprocessor == "" or lenses == "" or patientIdentifier == "":
-            return "Error: missing parameters", 404
+    if request.method == "GET" and lenses == "":
+        return "Error: missing parameters", 404
 
     print(SERVER_URL)
     if request.method == "POST":
@@ -54,9 +57,7 @@ def lens_app(bundleid=None):
         epibundle = data.get("epi")
         ips = data.get("ips")
         print(epibundle)
-        if ips is None and patientIdentifier == "":
-            return "Error: missing IPS", 404
-        # preprocessed_bundle, ips = separate_data(bundleid, patientIdentifier)
+
         if epibundle is None and bundleid is None:
             return "Error: missing EPI", 404
 
@@ -73,15 +74,14 @@ def lens_app(bundleid=None):
 
     title = TITLE_DOC[language]
     print(SERVER_URL)
-    if ips is None:
+    if ips is None and patientIdentifier is not None:
         # print(ips)
         body = {
-            "resourceType" : "Parameters",
-            "id" : "example",
-            "parameter" : [{
-                "name" : "identifier",
-                "valueIdentifier" : {"value": patientIdentifier}
-            }]
+            "resourceType": "Parameters",
+            "id": "example",
+            "parameter": [
+                {"name": "identifier", "valueIdentifier": {"value": patientIdentifier}}
+            ],
         }
         ips = requests.post(
             SERVER_URL + "ips/api/fhir/Patient/$summary", json=body, timeout=10
@@ -99,6 +99,8 @@ def lens_app(bundleid=None):
         response = summarize2(
             language, drug_name, gender, age, diagnostics, medications, model
         )
+    if ips is None:
+        response = summarize_no_personalization(language, drug_name, model)
     # Return the JSON response
     print(response)
     json_obj = {
