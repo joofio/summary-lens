@@ -177,8 +177,9 @@ def format_response(res):
     response_markdown = res.strip()
 
     print("Stripped response: " + response_markdown)
-
-    response = markdown.markdown(response_markdown)
+    # Replace bullet symbols (•) with an asterisk (*)
+    cleaned_data = response_markdown.replace("•", "\n*")
+    response = markdown.markdown(cleaned_data)
 
     response = response.replace("\n", "")
 
@@ -196,7 +197,7 @@ def summarize_no_personalization(language, epi, model):
         + "The summary should be clear, accurate, and comprehensive, highlighting the main ideas and key details of the text. "
         + "It is of extreme importance that you summarize the document in "
         + lang
-        + "and this is totally mandatory. Otherwise the reader will not understand. \n"
+        + " and this is totally mandatory. Otherwise the reader will not understand. \n"
         + "```"
         + epi_text
         + "```"
@@ -210,7 +211,7 @@ def summarize_no_personalization(language, epi, model):
         
         1. You must answer in """
         + lang
-        + """and this is totally mandatory. Otherwise I will not understand. \n
+        + """ and this is totally mandatory. Otherwise I will not understand. \n
         
         2. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
         3. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
@@ -253,6 +254,7 @@ def summarize_no_personalization(language, epi, model):
         "prompt": prompt,
         "datetime": datetime.now(),
         "model": model,
+        "lens": "summary_no_personalization",
     }
 
 
@@ -267,7 +269,7 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
         + "The summary should be clear, accurate, and comprehensive, highlighting the main ideas and key details of the text. "
         + "It is of extreme importance that you summarize the document in "
         + lang
-        + "and this is totally mandatory. Otherwise the reader will not understand. \n"
+        + " and this is totally mandatory. Otherwise the reader will not understand. \n"
         + "It should be written in a way that a person of gender: "
         + gender
         + " and with "
@@ -289,7 +291,7 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
         
         1. You must answer in """
         + lang
-        + """and this is totally mandatory. Otherwise I will not understand. \n
+        + """ and this is totally mandatory. Otherwise I will not understand. \n
         
         2. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
         3. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
@@ -334,6 +336,7 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
         "prompt": prompt,
         "datetime": datetime.now(),
         "model": model,
+        "lens": "summarize",
     }
 
 
@@ -465,4 +468,5 @@ def summarize2(
         "prompt": prompt,
         "datetime": datetime.now(),
         "model": model,
+        "lens": "summarize2",
     }

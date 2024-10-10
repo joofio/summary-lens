@@ -11,6 +11,7 @@ from lens_app.core import (
 )
 from fhir.resources.composition import Composition
 from fhir.resources.annotation import Annotation
+import uuid
 
 print(app.config)
 
@@ -74,7 +75,7 @@ def lens_app(bundleid=None):
 
     title = TITLE_DOC[language]
     print(SERVER_URL)
-    if ips is None and patientIdentifier is not None:
+    if ips is None and patientIdentifier != "":
         # print(ips)
         body = {
             "resourceType": "Parameters",
@@ -88,24 +89,36 @@ def lens_app(bundleid=None):
         ).json()
         print(ips)
     # print(ips)
-    gender, age, diagnostics, medications = process_ips(ips)
+    if ips:
+        gender, age, diagnostics, medications = process_ips(ips)
 
     # print(language, epi, gender, age, diagnostics, medications)
-    if lenses == "lens-summary":
+    if ips is None:
+        response = summarize_no_personalization(language, epi, model)
+    elif lenses == "lens-summary":
         response = summarize(
             language, epi, gender, age, diagnostics, medications, model
         )
-    if lenses == "lens-summary-2":
+    elif lenses == "lens-summary-2":
         response = summarize2(
             language, drug_name, gender, age, diagnostics, medications, model
         )
-    if ips is None:
-        response = summarize_no_personalization(language, drug_name, model)
+
     # Return the JSON response
     print(response)
+    if bundleid is None:
+        bundleid = epibundle["id"]
+
     json_obj = {
         "resourceType": "Composition",
-        "id": "example",
+        "meta": {
+            "profile": [
+                "htthttp://hl7.eu/fhir/ig/gravitate-health/StructureDefinition/SummaryData"
+            ]
+        },
+        "identifier": [
+            {"system": "http://gravitate-health.eu/summary", "value": str(uuid.uuid4())}
+        ],
         "status": "final",
         "type": {
             "coding": [
@@ -130,18 +143,12 @@ def lens_app(bundleid=None):
         "author": [{"display": "GH Lens"}],
         "date": "2012-01-04T09:10:14Z",
         "title": title,
+        "relatesTo": [
+            {"type": "derived-from", "resourceReference": {"reference": bundleid}}
+        ],
         "section": [
             {
                 "title": title,
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "10157-6",
-                            "display": "History of family member diseases Narrative",
-                        }
-                    ]
-                },
                 "text": {
                     "status": "additional",
                     "div": "",
@@ -149,11 +156,12 @@ def lens_app(bundleid=None):
             },
         ],
     }
+    print(response["datetime"].strftime("%Y-%m-%dT%H:%M:%SZ"))
     comp = Composition.parse_obj(json_obj)
-    comp.date = response["datetime"]
+    comp.date = response["datetime"].strftime("%Y-%m-%dT%H:%M:%SZ")
     comp.author[0].display = response["model"]
     note = Annotation.construct()
-    note.text = response["prompt"]
+    note.text = response["prompt"].replace("\xa0", " ")
     # comp.note[0].text = response["prompt"]
     comp.note = list()
     comp.note.append(note)

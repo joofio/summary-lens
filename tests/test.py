@@ -11,8 +11,16 @@ EPI = [
     "bundlepackageleaflet-es-4fab126d28f65a1084e7b50a23200363",  # xenical
     "bundlepackageleaflet-es-2f37d696067eeb6daf1111cfc3272672",  # tegretrol
 ]
-# HOST = "http://localhost:5005/summary/"
-HOST = "http://gravitate-health.lst.tfo.upm.es/ai/summary/"
+HOST = "http://localhost:5005/summary/"
+# HOST = "http://gravitate-health.lst.tfo.upm.es/ai/summary/"
+
+for e in EPI:
+    myreq = HOST + e + "?lenses=lens-summary-2&model=graviting-llama"
+    print(myreq)
+    response = requests.get(myreq)
+    print("ePI", e, response.status_code)
+    print(response.json())
+
 for p in PAT:
     for e in EPI:
         myreq = (
