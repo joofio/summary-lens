@@ -23,6 +23,8 @@ spec:
           value: "http://tinman.lst:11434"
         - name: OPENAI_KEY
           value: ""
+        - name: GROK_API_KEY
+          value: ""
         ports:
         - containerPort: 80
           protocol: TCP
