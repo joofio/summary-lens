@@ -1,7 +1,7 @@
 FROM python:3.10-slim
 
 # Install dependencies
-RUN mkdir /app
+RUN apt-get update && apt-get install -y pandoc
 WORKDIR /app
 
 

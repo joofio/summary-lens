@@ -5,7 +5,7 @@ import os
 from openai import OpenAI
 import json
 from ollama import Client
-import markdown
+import pypandoc
 from bs4 import BeautifulSoup
 from groq import Groq
 
@@ -172,16 +172,18 @@ def transform_fhir_epi(epi):
 
 
 def format_response(res):
-    print("Raw response: " + res)
+    # print("Raw response: " + res)
 
-    response_markdown = res.strip()
+    # response_markdown = res.strip()
 
-    print("Stripped response: " + response_markdown)
-    # Replace bullet symbols (•) with an asterisk (*)
-    cleaned_data = response_markdown.replace("•", "\n*")
-    response = markdown.markdown(cleaned_data)
+    # print("Stripped response: " + response_markdown)
+    # # Replace bullet symbols (•) with an asterisk (*)
+    # cleaned_data = response_markdown.replace("•", "\n*")
+    # response = markdown.markdown(cleaned_data)
 
-    response = response.replace("\n", "")
+    # response = response.replace("\n", "")
+
+    response = pypandoc.convert_text(res, "html", format="markdown_github")
 
     return response
 
