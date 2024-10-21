@@ -33,3 +33,28 @@ content-type: application/json
 #### 
 
 POST https://gravitate-health.lst.tfo.upm.es/bundlepackageleaflet-es-94a96e39cfdcd8b378d12dd4063065f9?preprocessors=preprocessing-service-manual&lenses=lens-selector-mvp2_proxy-pregnancy&patientIdentifier=alicia-1
+
+
+
+### no personalization - xenical
+##bundlepackageleaflet-en-4fab126d28f65a1084e7b50a23200363
+GET http://localhost:5005/summary/bundlepackageleaflet-en-4fab126d28f65a1084e7b50a23200363?preprocessors=preprocessing-service-manual&lenses=lens-summary-2&model=mistral
+content-type: application/json
+
+### no personalization - humalog
+##bundlepackageleaflet-en-a38f06714db0c27b2ba704652e3f08c5
+GET http://localhost:5005/summary/bundlepackageleaflet-en-a38f06714db0c27b2ba704652e3f08c5?preprocessors=preprocessing-service-manual&lenses=lens-summary-2&model=mistral
+content-type: application/json
+
+
+### no personalization - biktarvy
+# bundlepackageleaflet-en-94a96e39cfdcd8b378d12dd4063065f9
+GET http://localhost:5005/summary/bundlepackageleaflet-en-94a96e39cfdcd8b378d12dd4063065f9?preprocessors=preprocessing-service-manual&lenses=lens-summary-2&model=mistral
+content-type: application/json
+
+### no personalization - karvea
+##bundlepackageleaflet-en-dcaa4d32aa6658a8df831551503e52ee
+
+
+GET http://localhost:5005/summary/bundlepackageleaflet-en-dcaa4d32aa6658a8df831551503e52ee?preprocessors=preprocessing-service-manual&lenses=lens-summary-2&model=mistral
+content-type: application/json
