@@ -2,7 +2,6 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-
 from lens_app import app
 from lens_app.customJsonify import FhirJSONProvider
 
@@ -25,7 +24,7 @@ if not app.debug:
     app.logger.addHandler(file_handler)
 
     app.logger.setLevel(logging.INFO)
-    
+
     app.json = FhirJSONProvider(app)
 
 if __name__ == "__main__":

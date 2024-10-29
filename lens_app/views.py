@@ -1,6 +1,11 @@
-from flask import request, jsonify
-from lens_app import app
+import uuid
+
 import requests
+from fhir.resources.annotation import Annotation
+from fhir.resources.composition import Composition
+from flask import jsonify, request
+
+from lens_app import app
 from lens_app.core import (
     SERVER_URL,
     process_bundle,
@@ -9,9 +14,6 @@ from lens_app.core import (
     summarize2,
     summarize_no_personalization,
 )
-from fhir.resources.composition import Composition
-from fhir.resources.annotation import Annotation
-import uuid
 
 print(app.config)
 

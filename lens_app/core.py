@@ -1,13 +1,14 @@
-from datetime import datetime
-from fhirpathpy import evaluate
-from dotenv import load_dotenv
-import os
-from openai import OpenAI
 import json
-from ollama import Client
+import os
+from datetime import datetime
+
 import markdown
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from fhirpathpy import evaluate
 from groq import Groq
+from ollama import Client
+from openai import OpenAI
 
 load_dotenv()
 
@@ -312,20 +313,26 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
     #        5. Format the summary in paragraph form for easy understanding.
     #        6. Ensure the summary is well-structured, coherent, and logically organized.
 
-    if "groq" in model:
+    if model in [
+        "llama-3.1-70b-Versatile",
+        "Mixtral-8x7b-32768",
+        "Llama3-70b-8192",
+        "Llama3-8b-8192",
+        "Llama-3.2-90b-Text-Preview",
+    ]:
         chat_completion = groqclient.chat.completions.create(
             messages=[
                 {"role": "system", "content": systemMessage},
                 {"role": "user", "content": prompt},
             ],
-            model="llama3-70b-8192",
+            model=model,
             temperature=0.05,
         )
 
         response = format_response(chat_completion.choices[0].message.content)
     else:
         result = client.chat(
-            model="llama3",
+            model=model,
             messages=[
                 {"content": systemMessage, "role": "system"},
                 {"content": prompt, "role": "assistant"},
