@@ -10,7 +10,7 @@ spec:
   template:
     metadata:
       labels:
-        app: summary-lens-servicen
+        app: summary-lens-service
     spec:
       containers:
       - name: external-summary-lens-python
