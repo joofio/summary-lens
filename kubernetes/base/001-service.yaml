@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: external-summary-lens-python
+  name: summary-lens-service
   labels:
-    name: external-summary-lens-python
+    name: summary-lens-service
 spec:
   selector:
-    app: external-summary-lens-python
+    app: summary-lens-service
   ports:
   - protocol: TCP
     port: 80

@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: external-summary-lens-python
+  name: summary-lens-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: external-summary-lens-python
+      app: summary-lens-service
   template:
     metadata:
       labels:
-        app: external-summary-lens-python
+        app: summary-lens-servicen
     spec:
       containers:
       - name: external-summary-lens-python
-        image: gravitate-registry.cr.de-fra.ionos.com/external-summary-lens-python:latest
+        image: ggravitate-registry.cr.de-fra.ionos.com/summary-lens-service:latest
         imagePullPolicy: Always
         env:
         - name: SERVER_URL
