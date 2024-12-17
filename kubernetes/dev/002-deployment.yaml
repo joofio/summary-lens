@@ -13,7 +13,7 @@ spec:
         app: summary-lens-service
     spec:
       containers:
-      - name: external-summary-lens-python
+      - name: summary-lens-python
         image: ggravitate-registry.cr.de-fra.ionos.com/summary-lens-service:latest
         imagePullPolicy: Always
         env:
