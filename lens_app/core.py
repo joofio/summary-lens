@@ -344,7 +344,7 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
 
 
 def summarize2(
-    language, drug_name, gender, age, diagnostics, medications, model="llama"
+    language, drug_name, gender, age, diagnostics, medications, model="graviting-llama"
 ):
     # print(epi_text)
     # model = "gpt-4"
@@ -360,7 +360,7 @@ def summarize2(
     else:
         diagnostics_texts = "without any diagnostics"
 
-    prompt = f"The drug name is {drug_name}. Please explain it in a way a person with {age} years old can understand. Also take into account the patient is a {gender} {diagnostics_texts} and medications {medications}. Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in {lang} and this is totally mandatory. Otherwise I will not understand.\nAnswer:"
+    prompt = f"The drug name is {drug_name}. Please explain it in a way a person with {age} years old can understand. Also take into account the patient is a {gender} {diagnostics_texts} and medications {medications}. Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in {lang} and this is totally mandatory. Otherwise I will not understand.\nAnswer: "
     print("the prompt will be:\n" + prompt)
     if "gpt" in model:
         chat_completion = client.chat.completions.create(
@@ -403,8 +403,7 @@ def summarize2(
                 {"content": prompt_message, "role": "assistant"},
             ],
             stream=False,
-            keep_alive="-1m",
-            options={"seed": 1234, "temperature": 0},
+            options={"seed": 1234, "temperature": 0}
         )
 
         response = format_response(result["message"]["content"])
