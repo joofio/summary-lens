@@ -13,7 +13,7 @@ load_dotenv()
 
 SERVER_URL = os.getenv("SERVER_URL")
 MODEL_URL = os.getenv("MODEL_URL")
-print(MODEL_URL)
+print("Charging the model: " + MODEL_URL)
 client = Client(host=MODEL_URL)
 
 if MODEL_URL is None:
