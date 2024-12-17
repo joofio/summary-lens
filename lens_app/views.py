@@ -87,7 +87,6 @@ def lens_app(bundleid=None):
         ips = requests.post(
             SERVER_URL + "ips/api/fhir/Patient/$summary", json=body, timeout=10
         ).json()
-        print("IPS: " + ips)
     # print(ips)
     if ips:
         gender, age, diagnostics, medications = process_ips(ips)
