@@ -399,7 +399,7 @@ def summarize2(
         prompt_message = prompt
 
         result = client.chat(
-            model="llama3.2:3b",
+            model="graviting-llama",
             messages=[
                 {"content": systemMessage, "role": "system"},
                 {"content": prompt_message, "role": "assistant"},
