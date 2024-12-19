@@ -1,16 +1,16 @@
-
 import json
 import os
 from datetime import datetime
 
-import markdown
-
+import pypandoc
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from fhirpathpy import evaluate
 from groq import Groq
 from ollama import Client
 from openai import OpenAI
+
+from lens_app.prompts import PROMPT_LIST
 
 load_dotenv()
 
@@ -176,7 +176,7 @@ def transform_fhir_epi(epi):
 
 
 def format_response(res):
-    # print("Raw response: " + res)
+    print("Raw response: " + res)
 
     # response_markdown = res.strip()
 
@@ -197,18 +197,12 @@ def summarize_no_personalization(language, epi, model):
 
     lang = LANGUAGE_MAP[language]
     print("++++" * 40, lang)
-    prompt = (
-        "Write a concise summary of the following text delimited by triple backquotes. Return your response in bullet points which covers the key points of the text. "
-        + "You must only use the information provided in the text and avoid introducing any new information. "
-        + "The summary should be clear, accurate, and comprehensive, highlighting the main ideas and key details of the text. "
-        + "It is of extreme importance that you summarize the document in "
-        + lang
-        + " and this is totally mandatory. Otherwise the reader will not understand. \n"
-        + "```"
-        + epi_text
-        + "```"
-        + "\nBULLET POINT SUMMARY:"
-    )
+    prompt = PROMPT_LIST[lang]
+
+    prompt += "```"
+    +epi_text
+    +"```"
+    +"\nBULLET POINT SUMMARY:"
     print("the prompt will be:" + prompt)
 
     systemMessage = (
@@ -419,7 +413,7 @@ def summarize2(
             ],
             stream=False,
             keep_alive="-1m",
-            options={"seed": 1234, "temperature": 0}
+            options={"seed": 1234, "temperature": 0},
         )
 
         response = format_response(result["message"]["content"])
@@ -488,4 +482,68 @@ def summarize2(
         "datetime": datetime.now(),
         "model": model,
         "lens": "summarize2",
+    }
+
+
+def summarize3(language, epi, gender, age, diagnostics, medications, model):
+    epi_text = transform_fhir_epi(epi)
+
+    lang = LANGUAGE_MAP[language]
+    print("++++" * 40, lang)
+    prompt = (
+        "Write a concise summary of the following text delimited by triple backquotes. Return the 5 most important questions about it and answer them. "
+        + "You must only use the information provided in the text and avoid introducing any new information. "
+        + "It is of extreme importance that you summarize the document in "
+        + lang
+        + " and this is totally mandatory. Otherwise the reader will not understand. \n"
+        + "It should be written in a way that a person of gender: "
+        + gender
+        + " and with "
+        + str(age)
+        + " of age should be able to understand."
+        "You must reference highlight something that relates with the following topics and terms:"
+        + "|".join(diagnostics)
+        + "|".join(medications)
+        + "```"
+        + epi_text
+        + "```"
+        + "\nBULLET POINT SUMMARY:"
+    )
+    print("the prompt will be:" + prompt)
+
+    if model in [
+        "llama-3.1-70b-Versatile",
+        "Mixtral-8x7b-32768",
+        "Llama3-70b-8192",
+        "Llama3-8b-8192",
+        "Llama-3.2-90b-Text-Preview",
+    ]:
+        chat_completion = groqclient.chat.completions.create(
+            messages=[
+                {"role": "user", "content": prompt},
+            ],
+            model=model,
+            temperature=0.05,
+        )
+
+        response = format_response(chat_completion.choices[0].message.content)
+    else:
+        result = client.chat(
+            model=model,
+            messages=[
+                {"content": prompt, "role": "assistant"},
+            ],
+            stream=False,
+            keep_alive="-1m",
+            options={"seed": 1234, "temperature": 0},
+        )
+
+        response = format_response(result["message"]["content"])
+
+    return {
+        "response": response,
+        "prompt": prompt,
+        "datetime": datetime.now(),
+        "model": model,
+        "lens": "summarize",
     }
