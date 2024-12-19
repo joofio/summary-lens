@@ -12,6 +12,7 @@ from lens_app.core import (
     process_ips,
     summarize,
     summarize2,
+    summarize3,
     summarize_no_personalization,
 )
 
@@ -47,6 +48,18 @@ def lens_app(bundleid=None):
     lenses = request.args.get("lenses", "")
     patientIdentifier = request.args.get("patientIdentifier", "")
     model = request.args.get("model", "")
+    if model not in [
+        "graviting-llama",
+        "mistral",
+        "llama3",
+        "llama3.1",
+        "llama-3.1-70b-Versatile",
+        "Mixtral-8x7b-32768",
+        "Llama3-70b-8192",
+        "Llama3-8b-8192",
+        "Llama-3.2-90b-Text-Preview",
+    ]:
+        return "Error: Unknown Model", 404
     print(lenses, patientIdentifier)
     if lenses not in ["lens-summary", "lens-summary-2"]:
         return "Error: lens not supported", 404
@@ -95,6 +108,7 @@ def lens_app(bundleid=None):
 
     # print(language, epi, gender, age, diagnostics, medications)
     if ips is None:
+        print("NO IPS")
         if model not in [
             "mistral",
             "llama3",
@@ -109,10 +123,23 @@ def lens_app(bundleid=None):
         else:
             response = summarize_no_personalization(language, epi, model)
     elif lenses == "lens-summary":
+        model = "llama3.1" if model == "graviting-llama" else model
         response = summarize(
             language, epi, gender, age, diagnostics, medications, model
         )
     elif lenses == "lens-summary-2":
+        model = "llama3.1" if model == "graviting-llama" else model
+        # to prevent change on the app 19/12/2024
+        response = summarize(
+            language, epi, gender, age, diagnostics, medications, model
+        )
+    elif lenses == "lens-summary-3":
+        model = "llama3.1" if model == "graviting-llama" else model
+        response = summarize3(
+            language, epi, gender, age, diagnostics, medications, model
+        )
+    elif lenses == "lens-summary-2-2":
+        model = "llama3.1" if model == "graviting-llama" else model
         response = summarize2(
             language, drug_name, gender, age, diagnostics, medications, model
         )

@@ -14,12 +14,12 @@ EPI = [
 HOST = "http://localhost:5005/summary/"
 # HOST = "http://gravitate-health.lst.tfo.upm.es/ai/summary/"
 
-for e in EPI:
-    myreq = HOST + e + "?lenses=lens-summary-2&model=graviting-llama"
-    print(myreq)
-    response = requests.get(myreq)
-    print("ePI", e, response.status_code)
-    print(response.json())
+# for e in EPI:
+##    myreq = HOST + e + "?lenses=lens-summary-2&model=graviting-llama"
+#   print(myreq)
+##   response = requests.get(myreq)
+#   print("ePI", e, response.status_code)
+#  print(response.json())
 
 for p in PAT:
     for e in EPI:
