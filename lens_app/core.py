@@ -402,8 +402,7 @@ def summarize2(
                 {"content": systemMessage, "role": "system"},
                 {"content": prompt_message, "role": "assistant"},
             ],
-            stream=False,
-            options={"seed": 1234, "temperature": 0}
+            stream=False
         )
 
         response = format_response(result["message"]["content"])
