@@ -1,27 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: external-summary-lens-python
+  name: summary-lens-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: external-summary-lens-python
+      app: summary-lens-service
   template:
     metadata:
       labels:
-        app: external-summary-lens-python
+        app: summary-lens-service
     spec:
       containers:
-      - name: external-summary-lens-python
-        image: gravitate-registry.cr.de-fra.ionos.com/external-summary-lens-python:dev
+      - name: summary-lens-service
+        image: gravitate-registry.cr.de-fra.ionos.com/summary-lens-service:v0.13.0
         imagePullPolicy: Always
         env:
         - name: SERVER_URL
-          value: "https://gravitate-health.lst.tfo.upm.es/"
+          value: "https://fosps.gravitatehealth.eu/"
         - name: MODEL_URL
-          value: "http://tinman.lst:11434"
+          value: "https://ollama.lst.tfo.upm.es"
         - name: OPENAI_KEY
+          value: ""
+        - name: GROQ_API_KEY
           value: ""
         ports:
         - containerPort: 80

@@ -7,6 +7,6 @@ flask
 requests
 fhir.resources
 ollama
-markdown
 beautifulsoup4
 groq
+pypandoc

@@ -1,8 +1,10 @@
+
 import json
 import os
 from datetime import datetime
 
 import markdown
+
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from fhirpathpy import evaluate
@@ -14,7 +16,7 @@ load_dotenv()
 
 SERVER_URL = os.getenv("SERVER_URL")
 MODEL_URL = os.getenv("MODEL_URL")
-print(MODEL_URL)
+print("Charging the model: " + MODEL_URL)
 client = Client(host=MODEL_URL)
 
 if MODEL_URL is None:
@@ -81,6 +83,7 @@ def parse_response(response, type="response"):
             if type == "chat":
                 parsed_response += d["message"]["content"]
         except:
+            print("Error parsing response")
             pass
     return parsed_response
 
@@ -173,16 +176,18 @@ def transform_fhir_epi(epi):
 
 
 def format_response(res):
-    print("Raw response: " + res)
+    # print("Raw response: " + res)
 
-    response_markdown = res.strip()
+    # response_markdown = res.strip()
 
-    print("Stripped response: " + response_markdown)
-    # Replace bullet symbols (•) with an asterisk (*)
-    cleaned_data = response_markdown.replace("•", "\n*")
-    response = markdown.markdown(cleaned_data)
+    # print("Stripped response: " + response_markdown)
+    # # Replace bullet symbols (•) with an asterisk (*)
+    # cleaned_data = response_markdown.replace("•", "\n*")
+    # response = markdown.markdown(cleaned_data)
 
-    response = response.replace("\n", "")
+    # response = response.replace("\n", "")
+
+    response = pypandoc.convert_text(res, "html", format="gfm")
 
     return response
 
@@ -354,7 +359,7 @@ def summarize(language, epi, gender, age, diagnostics, medications, model):
 
 
 def summarize2(
-    language, drug_name, gender, age, diagnostics, medications, model="llama"
+    language, drug_name, gender, age, diagnostics, medications, model="graviting-llama"
 ):
     # print(epi_text)
     # model = "gpt-4"
@@ -370,7 +375,8 @@ def summarize2(
     else:
         diagnostics_texts = "without any diagnostics"
 
-    prompt = f"The drug name is {drug_name}. Please explain it in a way a person with {age} years old can understand. Also take into account the patient is a {gender} {diagnostics_texts}and medications {medications}. Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in {lang} and this is totally mandatory. Otherwise I will not understand.\n\nAnswer:\n\n"
+    prompt = f"The drug name is {drug_name}. Please explain it in a way a person with {age} years old can understand. Also take into account the patient is a {gender} {diagnostics_texts} and medications {medications}. Please explain the pros and cons of the medication. Especially for the other medication I am taking and conditions. You must answer in {lang} and this is totally mandatory. Otherwise I will not understand. Answer right below this line:"
+    print("the prompt will be:\n" + prompt)
     if "gpt" in model:
         chat_completion = client.chat.completions.create(
             messages=[
@@ -413,7 +419,7 @@ def summarize2(
             ],
             stream=False,
             keep_alive="-1m",
-            options={"seed": 1234, "temperature": 0},
+            options={"seed": 1234, "temperature": 0}
         )
 
         response = format_response(result["message"]["content"])

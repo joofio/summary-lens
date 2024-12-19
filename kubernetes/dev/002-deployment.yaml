@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: summary-lens-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: summary-lens-service
+  template:
+    metadata:
+      labels:
+        app: summary-lens-service
+    spec:
+      containers:
+      - name: summary-lens-python
+        image: ggravitate-registry.cr.de-fra.ionos.com/summary-lens-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_URL
+          value: "https://gravitate-health.lst.tfo.upm.es/"
+        - name: MODEL_URL
+          value: "http://tinman.lst:11434"
+        - name: OPENAI_KEY
+          value: ""
+        - name: GROQ_API_KEY
+          value: ""
+        ports:
+        - containerPort: 80
+          protocol: TCP
+      restartPolicy: Always
+status: {}
