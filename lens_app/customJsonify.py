@@ -1,5 +1,7 @@
-from flask.json.provider import DefaultJSONProvider
 from datetime import datetime
+
+from flask.json.provider import DefaultJSONProvider
+
 
 class FhirJSONProvider(DefaultJSONProvider):
     def __init__(self, app):
