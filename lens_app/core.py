@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from click import option
 from fhirpathpy import evaluate
 from dotenv import load_dotenv
 import os
@@ -397,12 +399,14 @@ def summarize2(
         prompt_message = prompt
 
         result = client.chat(
-            model="llama3.1",
+            model="llama3.2:3b",
             messages=[
                 {"content": systemMessage, "role": "system"},
                 {"content": prompt_message, "role": "assistant"},
             ],
-            stream=False
+            stream=False,
+            keep_alive="-1m",
+            options={"seed": 1234, "temperature": 0}
         )
 
         response = format_response(result["message"]["content"])
